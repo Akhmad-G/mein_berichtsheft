@@ -4,8 +4,8 @@
 
 @section('content')
   <nav>
-    <a href="{{ route('berichtsheft.create') }}">Neu Tagesbericht</a>
-{{--    <a href="/">Neu Wochenbericht</a>--}}
+    <a href="{{ route('tagesbericht.create') }}">Neu Tagesbericht</a>
+    <a href="{{ route('wochenbericht.create') }}">Neu Wochenbericht</a>
   </nav>
 
 
