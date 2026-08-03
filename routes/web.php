@@ -10,4 +10,4 @@ Route::get('/berichtshefte/', function () {
     return view('index');
 })->name("berichtshefte.index");
 
-Route::view()
+Route::view('/berichtsheft/create', 'create')->name('berichtsheft.create');
