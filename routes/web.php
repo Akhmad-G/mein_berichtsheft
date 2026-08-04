@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Tagesbericht;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -7,7 +8,9 @@ Route::get('/', function () {
 });
 
 Route::get('/berichtshefte/', function () {
-    return view('index');
+    return view('index', [
+      'berichtshefte' => Tagesbericht::get(),
+    ]);
 })->name("berichtshefte.index");
 
 Route::view('/berichtshefte/neuTagesbericht', 'neuTagesbericht')->name('tagesbericht.create');

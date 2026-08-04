@@ -13,6 +13,23 @@ return new class extends Migration
     {
         Schema::create('tagesberichte', function (Blueprint $table) {
             $table->id();
+            
+//            $table->string('title');
+            
+            $table->integer('ausbildungsnachweis_nummer');
+            $table->date('datum');
+            $table->string('wochentag');
+            $table->string('name');
+            $table->string('ausbildungsberuf');
+            $table->string('betrieb');
+            $table->string('backend');
+            $table->integer('ausbildungsjahr');
+            $table->integer('ausbildungswoche');
+            
+            $table->text('tätigkeiten');
+            $table->text('gelernt');
+            $table->text('probleme');
+            
             $table->timestamps();
         });
     }
