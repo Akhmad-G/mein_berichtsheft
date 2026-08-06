@@ -4,16 +4,18 @@
 
 @section('content')
   <nav>
-    <a href="{{ route('tagesbericht.create') }}">Neu Tagesbericht</a>
-    <a href="{{ route('wochenbericht.create') }}">Neu Wochenbericht</a>
+    <a href="{{ route('create.tagesbericht') }}">Neuer Tagesbericht</a>
+    <a href="{{ route('create.wochenbericht') }}">Neuer Wochenbericht</a>
   </nav>
   
-  @forelse($berichtshefte as $berichtshefte)
+  @forelse($berichtshefte as $berichtsheft)
     <div>
-      <a href="{{ route('tagesbericht.show', ['tagesbericht' => $tagesbericht->id]) }}">
+      <a href="{{ route('berichtshefte.show', ['type' => $berichtsheft->type, 'id' => $berichtsheft->id]) }}">
         {{ $berichtsheft->title }}
       </a>
     </div>
+  @empty
+    <p>Keine Berichtshefte</p>
   @endforelse
 
 

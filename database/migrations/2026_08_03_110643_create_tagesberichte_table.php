@@ -14,8 +14,6 @@ return new class extends Migration
         Schema::create('tagesberichte', function (Blueprint $table) {
             $table->id();
             
-//            $table->string('title');
-            
             $table->integer('ausbildungsnachweis_nummer');
             $table->date('datum');
             $table->string('wochentag');
