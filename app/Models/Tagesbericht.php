@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Tagesbericht extends Model
 {
+  use HasFactory;
+  
   protected $table = 'tagesberichte';
 
 //casts() converts into a Carbon date object that has the following methods:
