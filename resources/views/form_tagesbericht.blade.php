@@ -64,6 +64,11 @@
       <textarea name="probleme" id="probleme"></textarea>
     </div>
   </div>
+  
+  <div>
+    <button type="submit">Tagesbericht erstellen</button>
+{{--    oder Tagesbericht bearbeiten--}}
+  </div>
 
   
 
