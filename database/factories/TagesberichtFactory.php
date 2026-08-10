@@ -24,10 +24,10 @@ class TagesberichtFactory extends Factory
           'name' => fake()->name,
           'ausbildungsberuf' => 'Fachinformatiker – Anwendungsentwicklung',
           'betrieb' => fake()->company,
-          'backend' => 'Backend', //abteilung!!!
+          'abteilung' => 'Backend',
           'ausbildungsjahr' => fake()->randomDigit(),
           'ausbildungswoche' => fake()->randomDigit(),
-          'tätigkeiten' => fake()->paragraph, //taetigkeiten!
+          'taetigkeiten' => fake()->paragraph,
           'gelernt' => fake()->paragraph,
           'probleme' => fake()->paragraph,
         ];

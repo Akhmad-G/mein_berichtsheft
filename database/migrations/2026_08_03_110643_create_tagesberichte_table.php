@@ -20,11 +20,11 @@ return new class extends Migration
             $table->string('name');
             $table->string('ausbildungsberuf');
             $table->string('betrieb');
-            $table->string('backend');
+            $table->string('abteilung');
             $table->integer('ausbildungsjahr');
             $table->integer('ausbildungswoche');
             
-            $table->text('tätigkeiten');
+            $table->text('taetigkeiten');
             $table->text('gelernt');
             $table->text('probleme');
             
