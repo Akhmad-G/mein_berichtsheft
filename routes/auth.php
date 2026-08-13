@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AusbildungInfoController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
@@ -56,4 +57,11 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+});
+
+Route::middleware('auth')->group(function () {
+  Route::get('ausbildung-info', [AusbildungInfoController::class, 'create'])
+    ->name('ausbildung-info.create');
+  Route::post('ausbildung-info', [AusbildungInfoController::class, 'store'])
+    ->name('ausbildung-info.store');
 });

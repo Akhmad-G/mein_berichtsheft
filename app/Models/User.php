@@ -10,7 +10,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable([
+  'name', 'email', 'password',
+  'vorname', 'nachname', 'ausbildungsberuf',
+  'ausbildungsbetrieb', 'ausbildungsbeginn',
+])]
+
+// ===
+//protected $fillable = [
+//  'name', 'email', 'password',
+//  'vorname', 'nachname', 'ausbildungsberuf',
+//  'ausbildungsbetrieb', 'ausbildungsbeginn',
+//];
+
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -25,8 +37,19 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'ausbildungsbeginn' => 'date',
+            'ausbildung_info_completed_at' => 'datetime',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+  
+    protected static function booted(): void
+    {
+      static::saving(function (User $user) {
+        if ($user->vorname || $user->nachname) {
+          $user->name = trim($user->vorname.' '.$user->nachname);
+        }
+      });
     }
 }
