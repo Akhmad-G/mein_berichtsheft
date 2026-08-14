@@ -5,6 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title>{{ config('app.name', 'Laravel') }}</title>
+      
+        <link rel="icon" href="{{ asset('favicon.ico') }}">
 
         @fonts
 
@@ -22,12 +24,23 @@
             @if (Route::has('login'))
                 <nav class="flex items-center justify-end gap-4">
                     @auth
-                        <a
-                            href="{{ url('/dashboard') }}"
-                            class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal"
-                        >
-                            Dashboard
-                        </a>
+                        @if(Auth::user()->ausbildung_info_completed_at)
+                            <a
+                              href="{{ url('/dashboard') }}"
+                              class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal"
+                            >
+                              Dashboard
+                            </a>
+                        @else
+                            @if(Route::has('ausbildung-info.create'))
+                                <a
+                                  href="{{ route('ausbildung-info.create') }}"
+                                  class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal"
+                                >
+                                  Registrierung fortsetzen
+                                </a>
+                            @endif
+                        @endif
                     @else
                         <a
                             href="{{ route('login') }}"
