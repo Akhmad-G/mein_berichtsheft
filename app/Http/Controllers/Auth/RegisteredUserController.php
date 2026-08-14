@@ -36,6 +36,7 @@ class RegisteredUserController extends Controller
         ]);
 
         $user = User::create([
+            'name'=> $request->email,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
@@ -44,6 +45,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('ausbildungs-info.create')); // to registration step 2
+        return redirect(route('ausbildung-info.create')); // to registration step 2
     }
 }
