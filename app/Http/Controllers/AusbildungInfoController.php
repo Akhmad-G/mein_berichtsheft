@@ -23,12 +23,13 @@ class AusbildungInfoController extends Controller
       'ausbildungsbeginn' => ['required', 'date'],
     ]);
     
-//    $request->user()->update([
-//      ...$validated,
-//      'name' => $validated['vorname'].' '.$validated['nachname'],
-//      'ausbildung_info_completed_at' => now(),
-//    ]);
+    $request->user()->update([
+      ...$validated,
+      'name' => $validated['vorname'].' '.$validated['nachname'],
+      'ausbildung_info_completed_at' => now(),
+    ]);
     
     return redirect(route('dashboard'));
+//      ->with('success', 'Ausbildungsdaten gespeichert!');
   }
 }
