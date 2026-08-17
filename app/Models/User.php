@@ -14,6 +14,7 @@ use Illuminate\Notifications\Notifiable;
   'name', 'email', 'password',
   'vorname', 'nachname', 'ausbildungsberuf',
   'ausbildungsbetrieb', 'ausbildungsbeginn',
+  'ausbildung_info_completed_at',
 ])]
 
 // ===
