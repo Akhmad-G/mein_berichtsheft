@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AusbildungInfoController;
+use App\Http\Controllers\TagesberichtController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,6 +18,10 @@ Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
+    Route::resource('tagesberichte', TagesberichtController::class);
 });
 
 require __DIR__.'/auth.php';
