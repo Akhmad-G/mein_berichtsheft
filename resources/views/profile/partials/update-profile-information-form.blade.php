@@ -18,12 +18,6 @@
         @method('patch')
 
         <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
-        </div>
-
-        <div>
             <x-input-label for="email" :value="__('Email')" />
             <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
@@ -45,6 +39,41 @@
                     @endif
                 </div>
             @endif
+        </div>
+      
+        <!-- Vorname -->
+        <div>
+          <x-input-label for="vorname" :value="__('Vorname')" />
+          <x-text-input id="vorname" class="block mt-1 w-full" type="text" name="vorname" :value="old('vorname', $user->vorname)" required autofocus autocomplete="vorname" />
+          <x-input-error :messages="$errors->get('vorname')" class="mt-2" />
+        </div>
+        
+        <!-- Nachname -->
+        <div>
+          <x-input-label for="nachname" :value="__('Nachname')" />
+          <x-text-input id="nachname" class="block mt-1 w-full" type="text" name="nachname" :value="old('nachname', $user->nachname)" required autofocus autocomplete="nachname" />
+          <x-input-error :messages="$errors->get('nachname')" class="mt-2" />
+        </div>
+        
+        <!-- Ausbildungsberuf -->
+        <div>
+          <x-input-label for="ausbildungsberuf" :value="__('Ausbildungsberuf')" />
+          <x-text-input id="ausbildungsberuf" class="block mt-1 w-full" type="text" name="ausbildungsberuf" :value="old('ausbildungsberuf', $user->ausbildungsberuf)" required autofocus autocomplete="ausbildungsberuf" />
+          <x-input-error :messages="$errors->get('ausbildungsberuf')" class="mt-2" />
+        </div>
+        
+        <!-- Ausbildungsbetrieb -->
+        <div>
+          <x-input-label for="ausbildungsbetrieb" :value="__('Ausbildungsbetrieb')" />
+          <x-text-input id="ausbildungsbetrieb" class="block mt-1 w-full" type="text" name="ausbildungsbetrieb" :value="old('ausbildungsbetrieb', $user->ausbildungsbetrieb)" required autofocus autocomplete="ausbildungsbetrieb" />
+          <x-input-error :messages="$errors->get('ausbildungsbetrieb')" class="mt-2" />
+        </div>
+        
+        <!-- Ausbildungsbeginn -->
+        <div>
+          <x-input-label for="ausbildungsbeginn" :value="__('Ausbildungsbeginn')" />
+          <x-text-input id="ausbildungsbeginn" class="block mt-1 w-full" type="date" name="ausbildungsbeginn" :value="old('ausbildungsbeginn', $user->ausbildungsbeginn?->format('Y-m-d'))" required autofocus autocomplete="ausbildungsbeginn" />
+          <x-input-error :messages="$errors->get('ausbildungsbeginn')" class="mt-2" />
         </div>
 
         <div class="flex items-center gap-4">

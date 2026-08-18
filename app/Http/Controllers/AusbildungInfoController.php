@@ -29,7 +29,6 @@ class AusbildungInfoController extends Controller
       'ausbildung_info_completed_at' => now(),
     ]);
     
-    return redirect(route('dashboard'));
-//      ->with('success', 'Ausbildungsdaten gespeichert!');
+    return redirect(route('dashboard'))->with('success', 'Ausbildungsdaten gespeichert!');
   }
 }
