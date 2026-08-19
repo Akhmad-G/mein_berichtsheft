@@ -3,8 +3,7 @@
   
   <div>
     <x-input-label for="date" :value="__('Datum')" />
-    <input type="date" name="date" id="date" value="" class="mt-1 block w-full">
-{{--    <x-text-input id="email" name="email" type="email"  :value="old('email', $user->email)" required autocomplete="username" />--}}
+    <input type="date" name="date" id="date" value="" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
     <x-input-error class="mt-2" :messages="$errors->get('date')" />
   </div>
   <div>
@@ -14,18 +13,15 @@
       <input type="week" id="week" name="week">       ---> Besser für Ausbildungswoche
     </form>
     
-    OR
-    
-    <label for="cars">Choose a car:</label>
-    <select id="cars" name="cars">
-      <option value="volvo">Volvo</option>
-      <option value="saab">Saab</option>
-      <option value="fiat">Fiat</option>
-      <option value="audi">Audi</option>
-    </select>
 --}}
     <x-input-label for="wochentag" :value="__('Wochentag')" />
-    <x-text-input id="wochentag" class="block mt-1 w-full" type="text" name="wochentag" required autofocus autocomplete="wochentag" />
+    <select id="wochentag" name="wochentag" required autocomplete="wochentag" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+      <option value="montag">Montag</option>
+      <option value="dienstag">Dienstag</option>
+      <option value="mittwoch">Mittwoch</option>
+      <option value="donnerstag">Donnerstag</option>
+      <option value="freitag">Freitag</option>
+    </select>
     <x-input-error :messages="$errors->get('wochentag')" class="mt-2" />
   </div>
   
@@ -37,46 +33,29 @@
   
   <div>
     <x-input-label for="ausbildungswoche" :value="__('Ausbildungswoche')" />
-    <x-text-input id="ausbildungswoche" class="block mt-1 w-full" type="text" name="ausbildungswoche" required autofocus autocomplete="ausbildungswoche" />
+    <input type="week" id="ausbildungswoche" name="ausbildungswoche" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+{{--    <x-text-input id="ausbildungswoche" class="block mt-1 w-full" type="text" name="ausbildungswoche" required autofocus autocomplete="ausbildungswoche" />--}}
     <x-input-error :messages="$errors->get('ausbildungswoche')" class="mt-2" />
   </div>
   
-{{--
-  
-  <!-- Vorname -->
   <div>
-    <x-input-label for="vorname" :value="__('Vorname')" />
-    <x-text-input id="vorname" class="block mt-1 w-full" type="text" name="vorname" :value="old('vorname', $user->vorname)" required autofocus autocomplete="vorname" />
-    <x-input-error :messages="$errors->get('vorname')" class="mt-2" />
+    <x-input-label for="taetigkeiten" :value="__('Tätigkeiten')" />
+    <textarea name="taetigkeiten" id="taetigkeiten" cols="30" rows="10" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"></textarea>
+    <x-input-error :messages="$errors->get('taetigkeiten')" class="mt-2" />
   </div>
   
-  <!-- Nachname -->
   <div>
-    <x-input-label for="nachname" :value="__('Nachname')" />
-    <x-text-input id="nachname" class="block mt-1 w-full" type="text" name="nachname" :value="old('nachname', $user->nachname)" required autofocus autocomplete="nachname" />
-    <x-input-error :messages="$errors->get('nachname')" class="mt-2" />
+    <x-input-label for="gelernt" :value="__('Was habe ich gelernt?')" />
+    <textarea name="gelernt" id="gelernt" cols="30" rows="10" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"></textarea>
+    <x-input-error :messages="$errors->get('gelernt')" class="mt-2" />
   </div>
   
-  <!-- Ausbildungsberuf -->
   <div>
-    <x-input-label for="ausbildungsberuf" :value="__('Ausbildungsberuf')" />
-    <x-text-input id="ausbildungsberuf" class="block mt-1 w-full" type="text" name="ausbildungsberuf" :value="old('ausbildungsberuf', $user->ausbildungsberuf)" required autofocus autocomplete="ausbildungsberuf" />
-    <x-input-error :messages="$errors->get('ausbildungsberuf')" class="mt-2" />
+    <x-input-label for="probleme" :value="__('Besondere Ereignisse / Probleme')" />
+    <textarea name="probleme" id="probleme" cols="30" rows="10" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"></textarea>
+    <x-input-error :messages="$errors->get('probleme')" class="mt-2" />
   </div>
-  
-  <!-- Ausbildungsbetrieb -->
-  <div>
-    <x-input-label for="ausbildungsbetrieb" :value="__('Ausbildungsbetrieb')" />
-    <x-text-input id="ausbildungsbetrieb" class="block mt-1 w-full" type="text" name="ausbildungsbetrieb" :value="old('ausbildungsbetrieb', $user->ausbildungsbetrieb)" required autofocus autocomplete="ausbildungsbetrieb" />
-    <x-input-error :messages="$errors->get('ausbildungsbetrieb')" class="mt-2" />
-  </div>
-  
-  <!-- Ausbildungsbeginn -->
-  <div>
-    <x-input-label for="ausbildungsbeginn" :value="__('Ausbildungsbeginn')" />
-    <x-text-input id="ausbildungsbeginn" class="block mt-1 w-full" type="date" name="ausbildungsbeginn" :value="old('ausbildungsbeginn', $user->ausbildungsbeginn?->format('Y-m-d'))" required autofocus autocomplete="ausbildungsbeginn" />
-    <x-input-error :messages="$errors->get('ausbildungsbeginn')" class="mt-2" />
-  </div>
+
   
   <div class="flex items-center gap-4">
     <x-primary-button>{{ __('Save') }}</x-primary-button>
@@ -91,5 +70,4 @@
       >{{ __('Saved.') }}</p>
     @endif
   </div>
---}}
 </form>
