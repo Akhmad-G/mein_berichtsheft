@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TagesberichtController extends Controller
 {
@@ -29,7 +30,23 @@ class TagesberichtController extends Controller
      */
     public function store(Request $request)
     {
-        //
+//        dd($request->all());
+      $tagesbericht = $request->validate([
+        'date' => 'required|date',
+        'wochentag' => 'required|string',
+        'ausbildungsjahr' => 'required|numeric',
+        'ausbildungswoche' => ['required', 'string', 'max:255'],
+        'taetigkeiten' => 'required',
+        'gelernt' => '',
+        'probleme' => '',
+      ]);
+//      dump($tagesbericht);
+      
+      $filename = $tagesbericht['date'] . ' Tagesbericht.json';
+      
+      Storage::put($filename, json_encode($tagesbericht, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+      
+      return view('dashboard')->with('success', 'Tagesbericht gespeichert.');
     }
 
     /**
