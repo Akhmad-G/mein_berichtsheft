@@ -1,48 +1,27 @@
 <?php
 
-use App\Models\Tagesbericht;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TagesberichtController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route("berichtshefte.index");
+    return view('welcome');
 });
 
-Route::get('/berichtshefte/', function () {
+Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
+  Route::get('/dashboard', function () {
+    return view('dashboard');
+  })->middleware(['auth', 'verified'])->name('dashboard');
+});
 
-////  Option #1
-//  $berichtshefte = Tagesbericht::get()
-//    ->merge(Wochenbericht::get())
-//    ->sortByDesc('created_at');
+Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
-//  Option #2
-  $berichtshefte = collect()
-    ->merge(Tagesbericht::all()->map(function ($bericht) {
-      $bericht->type = 'tagesbericht';
-      
-      return $bericht;
-    }))
-//    ->merge(Wochenbericht::all())
-    ->sortByDesc('sort_date')
-    ->values();
-  
-  
-  return view('index', [
-      'berichtshefte' => $berichtshefte,
-    ]);
-})->name("berichtshefte.index");
+Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
+    Route::resource('tagesberichte', TagesberichtController::class);
+});
 
-Route::view('/berichtshefte/neuerTagesbericht', 'create_tagesbericht')->name('create.tagesbericht');
-
-Route::view('/berichtshefte/neuerWochenbericht', 'create_wochenbericht')->name('create.wochenbericht');
-
-Route::get('/berichtshefte/{type}/{id}', function (string $type, int $id) {
-  if ($type === 'tagesbericht') {
-    $bericht = Tagesbericht::findOrFail($id);
-    
-    return view('show_tagesbericht', [
-      'bericht' => $bericht,
-    ]);
-  }
-  
-  abort(404);
-})->name('berichtshefte.show');
+require __DIR__.'/auth.php';
