@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 #[Fillable([
   'name', 'email', 'password',
@@ -52,5 +53,28 @@ class User extends Authenticatable
           $user->name = trim($user->vorname.' '.$user->nachname);
         }
       });
+      
+      static::created(function (User $user) {
+        $user->assignGitlabPathIfMissing();
+      });
+      
+      static::updated(function (User $user) {
+        $user->assignGitlabPathIfMissing();
+      });
+    }
+  
+    public function assignGitlabPathIfMissing(): void
+    {
+      if ($this->gitlab_path) {
+        return;
+      }
+      
+      if (! $this->vorname && ! $this->nachname) {
+        return;
+      }
+      
+      $slug = Str::slug($this->name, '-', 'de');
+      $this->gitlab_path = "{$slug}-{$this->id}";
+      $this->saveQuietly();
     }
 }
