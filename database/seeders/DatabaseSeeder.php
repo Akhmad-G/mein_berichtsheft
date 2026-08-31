@@ -16,18 +16,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-//      User::factory()->create([
-//            'vorname' => 'Akhmad',
-//            'nachname' => 'Gazimagomedov',
-//            'email' => 'akhmad@artif.com',
-//            'email_verified_at' => now(),
-//            'password' => 'artifartif',
-//            'remember_token' => Str::random(10),
-//            'ausbildungsberuf' => 'Fachinformatiker',
-//            'ausbildungsbetrieb' => 'artif GmbH',
-//            'ausbildungsbeginn' => '2026-09-01 00:00:00',
-//      ]);
+      User::factory()->create([
+            'vorname' => 'Akhmad',
+            'nachname' => 'Gazimagomedov',
+            'email' => 'akhmad@artif.com',
+            'email_verified_at' => now(),
+            'password' => 'artifartif',
+            'remember_token' => Str::random(10),
+            'ausbildungsberuf' => 'Fachinformatiker',
+            'ausbildungsbetrieb' => 'artif GmbH',
+            'ausbildungsbeginn' => '2026-09-01 00:00:00',
+            'ausbildung_info_completed_at' => \Symfony\Component\Clock\now(),
+      ]);
       
-      User::factory(10)->create();
+      User::factory(0)->create();
     }
 }

@@ -6,13 +6,15 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use function Pest\Laravel\get;
 
 #[Fillable([
-  'name', 'email', 'password',
+  'email', 'password',
   'vorname', 'nachname', 'ausbildungsberuf',
   'ausbildungsbetrieb', 'ausbildungsbeginn',
   'ausbildung_info_completed_at',
@@ -48,12 +50,6 @@ class User extends Authenticatable
   
     protected static function booted(): void
     {
-      static::saving(function (User $user) {
-        if ($user->vorname || $user->nachname) {
-          $user->name = trim($user->vorname.' '.$user->nachname);
-        }
-      });
-      
       static::created(function (User $user) {
         $user->assignGitlabPathIfMissing();
       });
@@ -73,8 +69,20 @@ class User extends Authenticatable
         return;
       }
       
-      $slug = Str::slug($this->name, '-', 'de');
+      $slug = Str::slug($this->fullNameReversed(), '-', 'de');
       $this->gitlab_path = "{$slug}-{$this->id}";
       $this->saveQuietly();
+    }
+    
+    protected function name(): Attribute
+    {
+      return Attribute::make(
+        get: fn () => trim("{$this->vorname} {$this->nachname}"),
+      );
+    }
+  
+    public function fullNameReversed(): string
+    {
+      return trim("{$this->nachname} {$this->vorname}");
     }
 }
