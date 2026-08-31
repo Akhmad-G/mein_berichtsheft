@@ -3,11 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -45,6 +48,7 @@ class User extends Authenticatable
             'ausbildung_info_completed_at' => 'datetime',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => UserRole::class,
         ];
     }
   
@@ -61,6 +65,10 @@ class User extends Authenticatable
   
     public function assignGitlabPathIfMissing(): void
     {
+      if (! $this->isAzubi()) {
+        return;
+      }
+      
       if ($this->gitlab_path) {
         return;
       }
@@ -84,5 +92,25 @@ class User extends Authenticatable
     public function fullNameReversed(): string
     {
       return trim("{$this->nachname} {$this->vorname}");
+    }
+  
+    public function ausbilder(): BelongsTo
+    {
+      return $this->belongsTo(User::class, 'ausbilder_id');
+    }
+    
+    public function azubis(): HasMany
+    {
+      return $this->hasMany(User::class, 'ausbilder_id');
+    }
+    
+    public function isAzubi(): bool
+    {
+      return $this->role === UserRole::Azubi;
+    }
+    
+    public function isAusbilder(): bool
+    {
+      return $this->role === UserRole::Ausbilder;
     }
 }

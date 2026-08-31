@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -31,11 +32,21 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'role' => UserRole::Azubi,
+            'ausbilder_id' => null,
             'ausbildungsberuf' => fake('de_DE')->jobTitle(),
             'ausbildungsbetrieb' => fake('de_DE')->company(),
             'ausbildungsbeginn' => fake()->dateTimeBetween('now', '+10 years'),
-            'gitlab_path' => "gazimagomedov-akhmad-1",
+            'ausbildung_info_completed_at' => \Symfony\Component\Clock\now(),
         ];
+    }
+  
+    public function ausbilder(): static
+    {
+      return $this->state(fn () => [
+        'role' => UserRole::Ausbilder,
+        'ausbilder_id' => null,
+      ]);
     }
 
     /**

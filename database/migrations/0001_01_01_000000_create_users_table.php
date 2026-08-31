@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRole;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,10 +14,23 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('vorname')->nullable();
+            $table->string('nachname')->nullable();
+            
+            $table->string('role')->default(UserRole::Azubi->value);
+            $table->foreignId('ausbilder_id')->nullable()->constrained('users')->nullOnDelete();
+            
+            $table->string('gitlab_path')->nullable()->unique();
+            
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            
+            $table->string('ausbildungsberuf')->nullable();
+            $table->string('ausbildungsbetrieb')->nullable();
+            $table->date('ausbildungsbeginn')->nullable();
+            $table->timestamp('ausbildung_info_completed_at')->nullable();
+            
             $table->rememberToken();
             $table->timestamps();
         });
