@@ -24,4 +24,14 @@ Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
     Route::resource('tagesberichte', TagesberichtController::class);
 });
 
+// temporarily, delete later
+
+Route::get('/debug/wochenbericht', function () {
+  $user = auth()->user();
+  $service = app(\App\Contracts\GitLabServiceInterface::class);
+  $weekStart = \Carbon\Carbon::now()->startOfWeek();
+  
+  dd($service->getReportsForWeek($user, $weekStart));
+});
+
 require __DIR__.'/auth.php';

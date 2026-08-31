@@ -45,7 +45,8 @@ class TagesberichtController extends Controller
       
       $filename = $tagesbericht['date'] . ' Tagesbericht.json';
       
-      Storage::put($filename, json_encode($tagesbericht, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+//      To save locally in storage/app/private:
+//      Storage::put($filename, json_encode($tagesbericht, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
       
       $gitLabService->saveReport($request->user(), $filename, $tagesbericht);
       

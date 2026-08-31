@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             'ausbildungsbetrieb' => 'artif GmbH',
             'ausbildungsbeginn' => '2026-09-01 00:00:00',
             'ausbildung_info_completed_at' => \Symfony\Component\Clock\now(),
+            
       ]);
       
       User::factory(0)->create();

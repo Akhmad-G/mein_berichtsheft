@@ -33,7 +33,8 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'ausbildungsberuf' => fake('de_DE')->jobTitle(),
             'ausbildungsbetrieb' => fake('de_DE')->company(),
-            'ausbildungsbeginn' => fake()->dateTimeBetween('now', '+10 years')
+            'ausbildungsbeginn' => fake()->dateTimeBetween('now', '+10 years'),
+            'gitlab_path' => "gazimagomedov-akhmad-1",
         ];
     }
 

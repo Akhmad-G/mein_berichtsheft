@@ -16,4 +16,12 @@ class FakeGitLabService implements GitLabServiceInterface
       'filename' => $filename,
     ]);
   }
+  
+  public function getReportsForWeek(User $user, \Carbon\Carbon $weekStart): array
+  {
+      return [
+        'Montag' => ['taetigkeiten' => 'Fake-Bericht Montag'],
+        'Dienstag' => ['taetigkeiten' => 'Fake-Bericht Dienstag'],
+      ];
+  }
 }

@@ -73,4 +73,55 @@ class GitLabService implements GitLabServiceInterface
           );
         }
     }
+  
+    public function getReportsForWeek(User $user, \Carbon\Carbon $weekStart): array
+    {
+        $weekEnd = $weekStart->copy()->endOfWeek();
+        
+        // 1. Get the list of files in the user's folder.
+        $response = Http::withHeaders([
+          'PRIVATE-TOKEN' => $this->token,
+        ])->get("{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/tree", [
+          'path' => $user->gitlab_path,
+          'ref' => $this->branch,
+          'per_page' => 100,
+        ]);
+      
+        if ($response->failed()) {
+          throw new \RuntimeException("Failed to list files for {$user->gitlab_path}: {$response->status()}");
+        }
+      
+        $files = collect($response->json())
+          ->filter(fn ($file) => str_ends_with($file['name'], 'Tagesbericht.json'))
+          ->filter(function ($file) use ($weekStart, $weekEnd) {
+            // filename in the format "2026-08-31 Tagesbericht.json"
+            $date = \Carbon\Carbon::parse(substr($file['name'], 0, 10));
+            return $date->between($weekStart, $weekEnd);
+          });
+      
+      // 2. Download the contents of each file.
+      $reportsByWeekday = [];
+      
+      foreach ($files as $file) {
+        $encodedPath = rawurlencode($file['path']);
+        
+        $fileResponse = Http::withHeaders([
+          'PRIVATE-TOKEN' => $this->token,
+        ])->get("{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/files/{$encodedPath}/raw", [
+          'ref' => $this->branch,
+        ]);
+        
+        if ($fileResponse->failed()) {
+          Log::warning('Failed to fetch report', ['path' => $file['path']]);
+          continue;
+        }
+        
+        $data = json_decode($fileResponse->body(), true);
+        $weekday = \Carbon\Carbon::parse($data['date'])->translatedFormat('l'); // Montag, Dienstag, ...
+        
+        $reportsByWeekday[$weekday] = $data;
+      }
+      
+      return $reportsByWeekday;
+    }
 }
