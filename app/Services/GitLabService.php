@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
+use App\Contracts\GitLabServiceInterface;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use function Pest\Laravel\withHeaders;
 
-class GitLabService
+class GitLabService implements GitLabServiceInterface
 {
     protected string $baseUrl;
     protected string $token;
@@ -43,10 +44,7 @@ class GitLabService
         
         $filePath = "{$user->gitlab_path}/{$filename}";
         
-        $content = json_encode(
-            $data,
-            JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
-        );
+        $content = json_encode($data,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         
         $response = Http::withHeaders([
             'PRIVATE-TOKEN' => $this->token,

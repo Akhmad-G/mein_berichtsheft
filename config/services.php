@@ -39,6 +39,7 @@ return [
       'url' => env('GITLAB_URL'),
       'token' => env('GITLAB_TOKEN'),
       'project_id' => env('GITLAB_PROJECT_ID'),
+      'fake' => env('GITLAB_FAKE', false),
     ],
     
 ];

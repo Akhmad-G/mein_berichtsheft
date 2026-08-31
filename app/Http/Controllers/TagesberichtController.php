@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\GitLabServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Services\GitLabService;
 
 class TagesberichtController extends Controller
 {
@@ -29,7 +29,7 @@ class TagesberichtController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, GitLabService $gitlab)
+    public function store(Request $request, GitLabServiceInterface $gitLabService)
     {
 //        dd($request->all());
       $tagesbericht = $request->validate([
@@ -47,7 +47,7 @@ class TagesberichtController extends Controller
       
       Storage::put($filename, json_encode($tagesbericht, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
       
-      $gitlab->saveReport($request->user(), $filename, $tagesbericht);
+      $gitLabService->saveReport($request->user(), $filename, $tagesbericht);
       
       return view('dashboard')->with('success', 'Tagesbericht gespeichert.');
     }

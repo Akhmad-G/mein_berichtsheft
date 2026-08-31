@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,11 +16,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+//      User::factory()->create([
+//            'vorname' => 'Akhmad',
+//            'nachname' => 'Gazimagomedov',
+//            'email' => 'akhmad@artif.com',
+//            'email_verified_at' => now(),
+//            'password' => 'artifartif',
+//            'remember_token' => Str::random(10),
+//            'ausbildungsberuf' => 'Fachinformatiker',
+//            'ausbildungsbetrieb' => 'artif GmbH',
+//            'ausbildungsbeginn' => '2026-09-01 00:00:00',
+//      ]);
+      
+      User::factory(10)->create();
     }
 }
