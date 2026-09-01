@@ -12,11 +12,14 @@
                   <a href="{{ route('tagesberichte.create') }}">
                     <x-primary-button>{{ __('Neuer Tagesbericht') }}</x-primary-button>
                   </a>
+                  <a href="{{ route('tagesberichte.create') }}">
+                    <x-primary-button>{{ __('Neuer Wochenbericht') }}</x-primary-button>
+                  </a>
                 </div>
             </div>
             <div class="mt-4 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="flex items-center gap-4">
-                  <h2 class="p-6 text-gray-900 dark:text-gray-100">Alle Tagesberichte</h2>
+                  <h2 class="p-6 text-gray-900 dark:text-gray-100">Alle Berichtshefte</h2>
                 </div>
             </div>
         </div>

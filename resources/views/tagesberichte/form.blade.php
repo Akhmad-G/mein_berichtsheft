@@ -1,50 +1,27 @@
 <form method="post" action="{{ route('tagesberichte.store') }}" class="mt-6 space-y-6">
   @csrf
   
-  @php
-      $wochentage = [
-        1 => 'montag',
-        2 => 'dienstag',
-        3 => 'mittwoch',
-        4 => 'donnerstag',
-        5 => 'freitag',
-        6 => 'samstag',
-        7 => 'sonntag',
-      ];
-      
-      $heute = $wochentage[now()->isoWeekday()];
-      
-      $ausbildungsjahr = (now()->year) - ($user->ausbildungsbeginn?->format('Y'));
-  @endphp
-  
-  
   <div>
     <x-input-label for="date" :value="__('Datum')" />
-    <input type="date" name="date" id="date" value="{{ now()->format('Y-m-d') }}" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+    <input type="date" id="date" name="date" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
     <x-input-error class="mt-2" :messages="$errors->get('date')" />
   </div>
   
   <div>
     <x-input-label for="wochentag" :value="__('Wochentag')" />
-    <select id="wochentag" name="wochentag" required autocomplete="wochentag" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-      <option value="montag" @selected($heute === 'montag')>Montag</option>
-      <option value="dienstag" @selected($heute === 'dienstag')>Dienstag</option>
-      <option value="mittwoch" @selected($heute === 'mittwoch')>Mittwoch</option>
-      <option value="donnerstag" @selected($heute === 'donnerstag')>Donnerstag</option>
-      <option value="freitag" @selected($heute === 'freitag')>Freitag</option>
-    </select>
+    <x-text-input type="text" id="wochentag" name="ausbildungsjahr" class="block mt-1 w-full" readonly/>
     <x-input-error :messages="$errors->get('wochentag')" class="mt-2" />
   </div>
   
   <div>
     <x-input-label for="ausbildungsjahr" :value="__('Ausbildungsjahr')" />
-    <x-text-input id="ausbildungsjahr" class="block mt-1 w-full" type="text" name="ausbildungsjahr" required autofocus autocomplete="ausbildungsjahr" :value="$ausbildungsjahr"/>
+    <input type="number" id="ausbildungsjahr" name="ausbildungsjahr" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" readonly/>
     <x-input-error :messages="$errors->get('ausbildungsjahr')" class="mt-2" />
   </div>
   
   <div>
     <x-input-label for="ausbildungswoche" :value="__('Ausbildungswoche')" />
-    <input type="week" id="ausbildungswoche" name="ausbildungswoche" value="{{ now()->format('o-\WW') }}" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+    <x-text-input type="text" id="ausbildungswoche" name="ausbildungswoche" class="block mt-1 w-full" readonly/>
     <x-input-error :messages="$errors->get('ausbildungswoche')" class="mt-2" />
   </div>
   
@@ -80,4 +57,68 @@
       >{{ __('Saved.') }}</p>
     @endif
   </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const dateInput = document.getElementById('date');
+      const wochentagInput = document.getElementById('wochentag');
+      const ausbildungsjahrInput = document.getElementById('ausbildungsjahr');
+      const ausbildungswocheInput = document.getElementById('ausbildungswoche');
+
+      const ausbildungsbeginn = @json(auth()->user()->ausbildungsbeginn?->format('Y-m-d'));
+
+      const wochentage = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+
+      function getIsoWeek(date) {
+        // Datum kopieren, Uhrzeit zurücksetzen, damit es den Vergleich nicht beeinträchtigt.
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        // ISO week: the Thursday of the current week determines the week's year.
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        return { week: weekNo, year: d.getUTCFullYear() };
+      }
+
+      function updateFields() {
+        if (!dateInput.value) return;
+
+        const selectedDate = new Date(dateInput.value + 'T00:00:00');
+
+        // Wochentag
+        wochentagInput.value = wochentage[selectedDate.getDay()];
+
+        // Ausbildungswoche — Kalenderwoche, Format "KW36, 2026"
+        const { week, year } = getIsoWeek(selectedDate);
+        ausbildungswocheInput.value = `KW${week}, ${year}`;
+
+        // Ausbildungsjahr — wir zählen ab dem Beginn der Ausbildung (sofern ein solcher Termin besteht).
+        if (!ausbildungsbeginn) {
+          ausbildungsjahrInput.value = '';
+          return;
+        }
+
+        const startDate = new Date(ausbildungsbeginn + 'T00:00:00');
+
+        if (selectedDate < startDate) {
+          ausbildungsjahrInput.value = 0;
+          return;
+        }
+
+        let jahr = selectedDate.getFullYear() - startDate.getFullYear();
+        const anniversaryThisYear = new Date(startDate);
+        anniversaryThisYear.setFullYear(startDate.getFullYear() + jahr);
+        if (selectedDate < anniversaryThisYear) {
+          jahr -= 1;
+        }
+        ausbildungsjahrInput.value = jahr + 1;
+      }
+
+      dateInput.addEventListener('change', updateFields);
+
+      if (dateInput.value) {
+        updateFields();
+      }
+    });
+  </script>
 </form>

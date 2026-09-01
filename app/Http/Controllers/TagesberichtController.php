@@ -23,6 +23,7 @@ class TagesberichtController extends Controller
     {
         return view('tagesberichte.create', [
           'user' => $request->user(),
+          'ausbildungsbeginn' => auth()->user()->ausbildungsbeginn?->format('Y-m-d'),
         ]);
     }
 
