@@ -12,7 +12,7 @@
                   <a href="{{ route('tagesberichte.create') }}">
                     <x-primary-button>{{ __('Neuer Tagesbericht') }}</x-primary-button>
                   </a>
-                  <a href="{{ route('tagesberichte.create') }}">
+                  <a href="{{ route('wochenberichte.create') }}">
                     <x-primary-button>{{ __('Neuer Wochenbericht') }}</x-primary-button>
                   </a>
                 </div>
@@ -20,6 +20,27 @@
             <div class="mt-4 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="flex items-center gap-4">
                   <h2 class="p-6 text-gray-900 dark:text-gray-100">Alle Berichtshefte</h2>
+                </div>
+                <div class="">
+                  @forelse ($reports as $report)
+                    @php
+                      $routeName = $report['type'] === 'wochenbericht'
+                          ? 'wochenberichte.show'
+                          : 'tagesberichte.show';
+                    @endphp
+                    
+                    <a href="{{ route($routeName, ['path' => $report['path']]) }}"
+                       class="flex justify-between items-center px-4 py-3 border-b border-gray-700 hover:bg-gray-800">
+                      <span>
+                        {{ $report['name'] }}
+                      </span>
+                      <span class="text-xs uppercase tracking-wide text-gray-400">
+                        {{ $report['type'] === 'wochenbericht' ? 'Wochenbericht' : 'Tagesbericht' }}
+                      </span>
+                    </a>
+                  @empty
+                    <p class="text-gray-400">Noch keine Berichte vorhanden.</p>
+                  @endforelse
                 </div>
             </div>
         </div>

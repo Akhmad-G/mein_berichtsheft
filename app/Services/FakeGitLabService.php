@@ -30,4 +30,21 @@ class FakeGitLabService implements GitLabServiceInterface
         'Dienstag' => ['taetigkeiten' => 'Fake-Bericht Dienstag'],
       ];
   }
+  
+  public function listReports(User $user): array
+  {
+    return [
+      ['name' => '2026-08-31 Tagesbericht.json', 'path' => "{$user->gitlab_path}/2026-08-31 Tagesbericht.json", 'type' => 'tagesbericht'],
+      ['name' => 'KW35, 2026 Wochenbericht.json', 'path' => "{$user->gitlab_path}/KW35, 2026 Wochenbericht.json", 'type' => 'wochenbericht'],
+    ];
+  }
+ 
+  public function getReport(User $user, string $path): array
+  {
+    return [
+      'date' => '2026-08-31',
+      'wochentag' => 'Montag',
+      'taetigkeiten' => 'Fake-Inhalt für ' . $path,
+    ];
+  }
 }

@@ -124,4 +124,59 @@ class GitLabService implements GitLabServiceInterface
       
       return $reportsByWeekday;
     }
+  
+    public function listReports(User $user): array
+    {
+      if (! $user->gitlab_path) {
+        return [];
+      }
+      
+      $response = Http::withHeaders([
+        'PRIVATE-TOKEN' => $this->token,
+      ])->get("{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/tree", [
+        'path' => $user->gitlab_path,
+        'ref' => $this->branch,
+        'per_page' => 100,
+      ]);
+      
+      if ($response->failed()) {
+        Log::error('Failed to list reports', [
+          'user_id' => $user->id,
+          'status' => $response->status(),
+        ]);
+        return [];
+      }
+      
+      return collect($response->json())
+        ->filter(fn ($file) => str_ends_with($file['name'], '.json'))
+        ->map(function ($file) {
+          $type = str_contains($file['name'], 'Wochenbericht') ? 'wochenbericht' : 'tagesbericht';
+          
+          return [
+            'name' => $file['name'],
+            'path' => $file['path'],
+            'type' => $type,
+          ];
+        })
+        ->sortByDesc('name') // Die Namen beginnen mit dem Datum, daher gilt: Sortieren nach Name = Sortieren nach Datum
+        ->values()
+        ->all();
+    }
+  
+    public function getReport(User $user, string $path): array
+    {
+      $encodedPath = rawurlencode($path);
+      
+      $response = Http::withHeaders([
+        'PRIVATE-TOKEN' => $this->token,
+      ])->get("{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/files/{$encodedPath}/raw", [
+        'ref' => $this->branch,
+      ]);
+      
+      if ($response->failed()) {
+        throw new \RuntimeException("Failed to fetch report {$path}: {$response->status()}");
+      }
+      
+      return json_decode($response->body(), true);
+    }
 }

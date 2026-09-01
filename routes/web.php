@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TagesberichtController;
+use App\Http\Controllers\WochenberichtController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -9,9 +11,9 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
-  Route::get('/dashboard', function () {
-    return view('dashboard');
-  })->middleware(['auth', 'verified'])->name('dashboard');
+  Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 });
 
 Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
@@ -21,7 +23,16 @@ Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
 });
 
 Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
-    Route::resource('tagesberichte', TagesberichtController::class);
+    Route::resource('tagesberichte', TagesberichtController::class)->except(['show', 'edit']);;
+    Route::resource('wochenberichte', WochenberichtController::class)->except(['show', 'edit']);;
+  
+    Route::get('/tagesberichte/{path}', [TagesberichtController::class, 'show'])
+      ->where('path', '.*')
+      ->name('tagesberichte.show');
+  
+    Route::get('/wochenberichte/{path}', [WochenberichtController::class, 'show'])
+      ->where('path', '.*')
+      ->name('wochenberichte.show');
 });
 
 // temporarily, delete later

@@ -51,15 +51,20 @@ class TagesberichtController extends Controller
       
       $gitLabService->saveReport($request->user(), $filename, $tagesbericht);
       
-      return view('dashboard')->with('success', 'Tagesbericht gespeichert.');
+      return redirect()->route('dashboard')->with('success', 'Tagesbericht gespeichert.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $path, GitLabServiceInterface $gitLabService)
     {
-        //
+        $report = $gitLabService->getReport(auth()->user(), $path);
+        
+        return view('tagesberichte.show', [
+            'report' => $report,
+            'path' => $path,
+        ]);
     }
 
     /**

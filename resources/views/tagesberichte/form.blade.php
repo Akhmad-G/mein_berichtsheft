@@ -9,7 +9,7 @@
   
   <div>
     <x-input-label for="wochentag" :value="__('Wochentag')" />
-    <x-text-input type="text" id="wochentag" name="ausbildungsjahr" class="block mt-1 w-full" readonly/>
+    <x-text-input type="text" id="wochentag" name="wochentag" class="block mt-1 w-full" readonly/>
     <x-input-error :messages="$errors->get('wochentag')" class="mt-2" />
   </div>
   
