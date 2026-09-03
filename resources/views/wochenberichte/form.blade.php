@@ -72,22 +72,15 @@
       uebernehmenBtn.textContent = 'Wird geladen...';
 
       const url = `{{ route('wochenberichte.uebernehmen') }}?week=${weekInput.value}`;
-      console.log('Request URL:', url);
       
       try {
         const response = await fetch(url, {
           headers: { 'Accept': 'application/json' }
         });
-
-        console.log('Status:', response.status);
-
-        const rawText = await response.clone().text();
-        console.log('Raw response:', rawText);
-
+        
         if (!response.ok) throw new Error('Fehler beim Laden' + response.status);
 
         const data = await response.json();
-        console.log('Parsed data:', data);
 
         wochentage.forEach(function (tag) {
           const form = document.getElementById('wochenbericht-form');
@@ -96,7 +89,6 @@
           form.querySelector(`[name="tage[${tag}][probleme]"]`).value = data[tag]?.probleme ?? '';
         });
       } catch (e) {
-        console.error('Fetch error:', e);
         alert('Tagesberichte konnten nicht geladen werden.');
       } finally {
         uebernehmenBtn.disabled = false;

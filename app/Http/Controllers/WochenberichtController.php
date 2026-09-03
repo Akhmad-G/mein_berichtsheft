@@ -34,15 +34,7 @@ class WochenberichtController extends Controller
         
         $weekStart = $this->parseWeekStart($request->query('week'));
         
-        \Log::info('uebernehmen debug', [
-            'week_param' => $request->query('week'),
-            'week_start' => $weekStart->format('Y-m-d'),
-            'gitlab_path' => $request->user()->gitlab_path,
-        ]);
-        
         $tagesberichte = $gitLabService->getReportsForWeek($request->user(), $weekStart);
-        
-        \Log::info('tagesberichte raw result', ['tagesberichte' => $tagesberichte]);
         
         $result = [];
         foreach ($this->wochentage as $tag) {
