@@ -19,9 +19,9 @@
             </div>
             <div class="mt-4 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="flex items-center gap-4">
-                  <h2 class="p-6 text-gray-900 dark:text-gray-100">Alle Berichtshefte</h2>
+                  <h2 class="p-6 text-lg text-gray-900 dark:text-gray-100">Alle Berichtshefte</h2>
                 </div>
-                <div class="">
+                <div class="text-white">
                   @forelse ($reports as $report)
                     @php
                       $routeName = $report['type'] === 'wochenbericht'
@@ -29,8 +29,8 @@
                           : 'tagesberichte.show';
                     @endphp
                     
-                    <a href="{{ route($routeName, ['path' => $report['path']]) }}"
-                       class="flex justify-between items-center px-4 py-3 border-b border-gray-700 hover:bg-gray-800">
+                    <a href="{{ route($routeName, ['path' => $report['encoded_path']]) }}"
+                       class="flex justify-between items-center px-4 py-3 border-b border-gray-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">
                       <span>
                         {{ $report['name'] }}
                       </span>
@@ -39,7 +39,7 @@
                       </span>
                     </a>
                   @empty
-                    <p class="text-gray-400">Noch keine Berichte vorhanden.</p>
+                    <p class="text-white">Noch keine Berichte vorhanden.</p>
                   @endforelse
                 </div>
             </div>

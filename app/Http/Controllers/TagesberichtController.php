@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\GitLabServiceInterface;
+use App\Support\GitLabPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -59,11 +60,13 @@ class TagesberichtController extends Controller
      */
     public function show(string $path, GitLabServiceInterface $gitLabService)
     {
-        $report = $gitLabService->getReport(auth()->user(), $path);
+        $realPath = GitLabPath::decode($path);
+        
+        $report = $gitLabService->getReport(auth()->user(), $realPath);
         
         return view('tagesberichte.show', [
             'report' => $report,
-            'path' => $path,
+            'path' => $realPath,
         ]);
     }
 

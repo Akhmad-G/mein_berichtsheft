@@ -9,13 +9,15 @@
     @foreach (['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'] as $tag)
       @if (! empty($report['tage'][$tag]))
         <div>
-          <span class="text-sm text-gray-400">{{ $tag }}</span>
-          <p class="whitespace-pre-line">{{ $report['tage'][$tag] }}</p>
+          <span class="text-gray-900 dark:text-gray-100">{{ $tag }}</span>
+          <p class="whitespace-pre-line text-gray-700 dark:text-gray-300">{{ $report['tage'][$tag]['taetigkeiten'] }}</p>
+          <p class="whitespace-pre-line text-gray-700 dark:text-gray-300">{{ $report['tage'][$tag]['gelernt'] }}</p>
+          <p class="whitespace-pre-line text-gray-700 dark:text-gray-300">{{ $report['tage'][$tag]['probleme'] }}</p>
         </div>
       @endif
     @endforeach
     
-    <a href="{{ route('dashboard') }}" class="inline-block mt-6 text-sm text-gray-400 hover:text-white">
+    <a href="{{ route('dashboard') }}" class="inline-block mt-6 text-sm text-gray-900 dark:text-gray-100 hover:text-white">
       ← Zurück zum Dashboard
     </a>
   </div>

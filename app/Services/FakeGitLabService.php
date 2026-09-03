@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\GitLabServiceInterface;
 use App\Models\User;
+use App\Support\GitLabPath;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -34,8 +35,17 @@ class FakeGitLabService implements GitLabServiceInterface
   public function listReports(User $user): array
   {
     return [
-      ['name' => '2026-08-31 Tagesbericht.json', 'path' => "{$user->gitlab_path}/2026-08-31 Tagesbericht.json", 'type' => 'tagesbericht'],
-      ['name' => 'KW35, 2026 Wochenbericht.json', 'path' => "{$user->gitlab_path}/KW35, 2026 Wochenbericht.json", 'type' => 'wochenbericht'],
+      [
+        'name' => '2026-08-31 Tagesbericht.json',
+        'path' => "{$user->gitlab_path}/2026-08-31 Tagesbericht.json",
+        'encoded_path' => GitLabPath::encode("{$user->gitlab_path}/2026-08-31 Tagesbericht.json"),
+        'type' => 'tagesbericht',
+      ],
+      [
+        'name' => 'KW35, 2026 Wochenbericht.json',
+        'path' => "{$user->gitlab_path}/KW35, 2026 Wochenbericht.json",
+        'encoded_path' => GitLabPath::encode("{$user->gitlab_path}/2026-KW35 Wochenbericht.json"),
+        'type' => 'wochenbericht'],
     ];
   }
  

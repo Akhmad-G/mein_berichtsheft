@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\GitLabServiceInterface;
 use App\Models\User;
+use App\Support\GitLabPath;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use function Pest\Laravel\withHeaders;
@@ -155,6 +156,7 @@ class GitLabService implements GitLabServiceInterface
           return [
             'name' => $file['name'],
             'path' => $file['path'],
+            'encoded_path' => GitLabPath::encode($file['path']),
             'type' => $type,
           ];
         })

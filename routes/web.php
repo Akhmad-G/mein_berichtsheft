@@ -23,16 +23,14 @@ Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
 });
 
 Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
-    Route::resource('tagesberichte', TagesberichtController::class)->except(['show', 'edit']);;
-    Route::resource('wochenberichte', WochenberichtController::class)->except(['show', 'edit']);;
-  
-    Route::get('/tagesberichte/{path}', [TagesberichtController::class, 'show'])
-      ->where('path', '.*')
-      ->name('tagesberichte.show');
-  
-    Route::get('/wochenberichte/{path}', [WochenberichtController::class, 'show'])
-      ->where('path', '.*')
-      ->name('wochenberichte.show');
+    Route::resource('tagesberichte', TagesberichtController::class)->except(['show', 'edit']);
+    Route::resource('wochenberichte', WochenberichtController::class)->except(['show', 'edit']);
+    
+    Route::get('/tagesberichte/{path}', [TagesberichtController::class, 'show'])->name('tagesberichte.show');
+    Route::get('/wochenberichte/{path}', [WochenberichtController::class, 'show'])->name('wochenberichte.show');
+    
+    Route::get('/wochenberichte-uebernehmen', [WochenberichtController::class, 'uebernehmen'])
+      ->name('wochenberichte.uebernehmen');
 });
 
 // temporarily, delete later

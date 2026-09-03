@@ -113,4 +113,13 @@ class User extends Authenticatable
     {
       return $this->role === UserRole::Ausbilder;
     }
+  
+    public function nextBerichtsnummer(): int
+    {
+      $number = $this->next_berichtsnummer;
+      
+      $this->increment('next_berichtsnummer');
+      
+      return $number;
+    }
 }
