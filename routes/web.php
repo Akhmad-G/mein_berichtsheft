@@ -31,6 +31,8 @@ Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
     
     Route::get('/wochenberichte-uebernehmen', [WochenberichtController::class, 'uebernehmen'])
       ->name('wochenberichte.uebernehmen');
+    
+    Route::post('/wochenberichte/{path}/sign', [WochenberichtController::class, 'sign'])->name('wochenberichte.sign');
 });
 
 // temporarily, delete later

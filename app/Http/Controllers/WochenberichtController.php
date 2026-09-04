@@ -110,13 +110,19 @@ class WochenberichtController extends Controller
      */
     public function show(string $path, GitLabServiceInterface $gitLabService)
     {
+        logger()->info('Wochenbericht sign route reached', [
+            'path' => $path,
+            'decoded' => GitLabPath::decode($path),
+        ]);
+        
         $realPath = GitLabPath::decode($path);
+        $this->authorizeOwnPath($realPath);
         
         $report = $gitLabService->getReport(auth()->user(), $realPath);
         
         return view('wochenberichte.show', [
             'report' => $report,
-            'path' => $realPath,
+            'path' => GitLabPath::encode($realPath),
         ]);
     }
 
@@ -148,5 +154,38 @@ class WochenberichtController extends Controller
         [$year, $weekNumber] = explode('-W', $week);
         
         return Carbon::now()->setISODate((int) $year, (int) $weekNumber)->startOfWeek();
+    }
+    
+    public function sign(Request $request, string $path, GitLabServiceInterface $gitLabService)
+    {
+        $realPath = GitLabPath::decode($path);
+        $this->authorizeOwnPath($realPath);
+        
+        $validated = $request->validate([
+            'signature' => 'required|string|starts_with:data:image/png;base64,',
+        ]);
+        
+        $user = $request->user();
+        
+        $existing = $gitLabService->getReport($user, $realPath);
+        
+        $existing['unterschriften']['azubi'] = [
+            'name' => $user->name,
+            'signed_at' => now()->format('d.m.Y H:i'),
+            'image' => $validated['signature'],
+        ];
+        
+        $filename = basename($realPath);
+        
+        $gitLabService->saveReport($user, $filename, $existing, 'update');
+        
+        return response()->json(['success' => true]);
+    }
+    
+    protected function authorizeOwnPath(string $realPath): void
+    {
+        if (! str_starts_with($realPath, auth()->user()->gitlab_path . '/')) {
+            abort(403, 'Nicht berechtigt.');
+        }
     }
 }

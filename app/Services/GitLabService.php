@@ -31,7 +31,7 @@ class GitLabService implements GitLabServiceInterface
      * @param array $data report data, to be encoded as JSON
      */
     
-    public function saveReport(User $user, string $filename, array $data): void
+    public function saveReport(User $user, string $filename, array $data, string $action = 'create'): void
     {
 //        dd([
 //          'url' => "{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/commits",
@@ -54,7 +54,7 @@ class GitLabService implements GitLabServiceInterface
             'commit_message' => "Add {$filename} for {$user->gitlab_path}",
             'actions' => [
                 [
-                    'action' => 'create',
+                    'action' => $action,
                     'file_path' => $filePath,
                     'content' => $content,
                 ],
