@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\GitLabServiceInterface;
+use App\Models\User;
 use App\Support\GitLabPath;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -110,15 +112,10 @@ class WochenberichtController extends Controller
      */
     public function show(string $path, GitLabServiceInterface $gitLabService)
     {
-        logger()->info('Wochenbericht sign route reached', [
-            'path' => $path,
-            'decoded' => GitLabPath::decode($path),
-        ]);
-        
         $realPath = GitLabPath::decode($path);
-        $this->authorizeOwnPath($realPath);
+        $reportOwner = $this->authorizeReportPath($realPath);
         
-        $report = $gitLabService->getReport(auth()->user(), $realPath);
+        $report = $gitLabService->getReport($reportOwner, $realPath);
         
         return view('wochenberichte.show', [
             'report' => $report,
@@ -159,7 +156,7 @@ class WochenberichtController extends Controller
     public function sign(Request $request, string $path, GitLabServiceInterface $gitLabService)
     {
         $realPath = GitLabPath::decode($path);
-        $this->authorizeOwnPath($realPath);
+        $reportOwner = $this->authorizeReportPath($realPath);
         
         $validated = $request->validate([
             'signature' => 'required|string|starts_with:data:image/png;base64,',
@@ -167,9 +164,28 @@ class WochenberichtController extends Controller
         
         $user = $request->user();
         
-        $existing = $gitLabService->getReport($user, $realPath);
+        if (! $user->isAzubi() && ! $user->isAusbilder()) {
+            abort(403, 'Diese Rolle darf nicht unterschreiben.');
+        }
         
-        $existing['unterschriften']['azubi'] = [
+        if ($user->isAzubi() && $user->id !== $reportOwner->id) {
+            abort(403, 'Azubis dürfen nur eigene Wochenberichte unterschreiben.');
+        }
+        
+        if ($user->isAusbilder() && $reportOwner->ausbilder_id !== $user->id) {
+            abort(403, 'Ausbilder dürfen nur Wochenberichte eigener Azubis unterschreiben.');
+        }
+        
+        $signatureKey = $user->isAusbilder() ? 'ausbilder' : 'azubi';
+        
+        $existing = $gitLabService->getReport($reportOwner, $realPath);
+        
+        $existing['unterschriften'] ??= [
+            'azubi' => null,
+            'ausbilder' => null,
+        ];
+        
+        $existing['unterschriften'][$signatureKey] = [
             'name' => $user->name,
             'signed_at' => now()->format('d.m.Y H:i'),
             'image' => $validated['signature'],
@@ -177,15 +193,50 @@ class WochenberichtController extends Controller
         
         $filename = basename($realPath);
         
-        $gitLabService->saveReport($user, $filename, $existing, 'update');
+        $gitLabService->saveReport($reportOwner, $filename, $existing, 'update');
         
         return response()->json(['success' => true]);
     }
     
-    protected function authorizeOwnPath(string $realPath): void
+    public function pdf(string $path, GitLabServiceInterface $gitLabService)
     {
-        if (! str_starts_with($realPath, auth()->user()->gitlab_path . '/')) {
-            abort(403, 'Nicht berechtigt.');
+        $realPath = GitLabPath::decode($path);
+        $reportOwner = $this->authorizeReportPath($realPath);
+        
+        $report = $gitLabService->getReport($reportOwner, $realPath);
+        
+        $pdf = Pdf::loadView('wochenberichte.pdf', [
+            'report' => $report,
+            'owner' => $reportOwner,
+        ])->setPaper('a4');
+        
+        $filename = pathinfo(basename($realPath), PATHINFO_FILENAME) . '.pdf';
+        
+        return $pdf->download($filename);
+    }
+    
+    protected function authorizeReportPath(string $realPath): User
+    {
+        $owner = User::query()
+            ->whereNotNull('gitlab_path')
+            ->where('gitlab_path', '!=', '')
+            ->get()
+            ->first(fn (User $user) => str_starts_with($realPath, $user->gitlab_path . '/'));
+        
+        if (! $owner) {
+            abort(403, 'Berichtsinhaber konnte nicht ermittelt werden.');
         }
+        
+        $currentUser = auth()->user();
+        
+        if ($currentUser->isAzubi() && $currentUser->id === $owner->id) {
+            return $owner;
+        }
+        
+        if ($currentUser->isAusbilder() && $owner->ausbilder_id === $currentUser->id) {
+            return $owner;
+        }
+        
+        abort(403, 'Nicht berechtigt.');
     }
 }

@@ -27,10 +27,14 @@ Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
     Route::resource('wochenberichte', WochenberichtController::class)->except(['show', 'edit']);
     
     Route::get('/tagesberichte/{path}', [TagesberichtController::class, 'show'])->name('tagesberichte.show');
+    
+    Route::get('/wochenberichte/{path}/pdf', [WochenberichtController::class, 'pdf'])
+        ->name('wochenberichte.pdf');
+    
     Route::get('/wochenberichte/{path}', [WochenberichtController::class, 'show'])->name('wochenberichte.show');
     
     Route::get('/wochenberichte-uebernehmen', [WochenberichtController::class, 'uebernehmen'])
-      ->name('wochenberichte.uebernehmen');
+        ->name('wochenberichte.uebernehmen');
     
     Route::post('/wochenberichte/{path}/sign', [WochenberichtController::class, 'sign'])->name('wochenberichte.sign');
 });

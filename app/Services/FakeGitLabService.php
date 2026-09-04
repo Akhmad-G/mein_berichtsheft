@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class FakeGitLabService implements GitLabServiceInterface
 {
-  public function saveReport(User $user, string $filename, array $data): void
+  public function saveReport(User $user, string $filename, array $data, string $action = 'create'): void
   {
     $path = "fake-gitlab/{$user->gitlab_path}/{$filename}";
     

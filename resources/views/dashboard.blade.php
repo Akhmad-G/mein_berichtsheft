@@ -33,6 +33,12 @@
                        class="flex justify-between items-center px-4 py-3 border-b border-gray-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">
                       <span>
                         {{ $report['name'] }}
+                        
+                        @if (! empty($report['azubi_name']))
+                          <span class="ml-2 text-xs text-gray-400">
+                            — {{ $report['azubi_name'] }}
+                          </span>
+                        @endif
                       </span>
                       <span class="text-xs uppercase tracking-wide text-gray-400">
                         {{ $report['type'] === 'wochenbericht' ? 'Wochenbericht' : 'Tagesbericht' }}
