@@ -31,6 +31,8 @@ return new class extends Migration
             $table->date('ausbildungsbeginn')->nullable();
             $table->timestamp('ausbildung_info_completed_at')->nullable();
             
+            $table->unsignedInteger('next_berichtsnummer')->default(1);
+            
             $table->rememberToken();
             $table->timestamps();
         });
