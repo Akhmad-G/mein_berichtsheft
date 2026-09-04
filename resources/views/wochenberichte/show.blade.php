@@ -7,12 +7,6 @@
   
   <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-      <div class="flex justify-end">
-        <a href="{{ route('wochenberichte.pdf', ['path' => $path]) }}"
-           class="inline-flex items-center px-4 py-2 bg-white text-black rounded hover:bg-gray-200">
-          PDF herunterladen
-        </a>
-      </div>
       
       <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
         @foreach (['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'] as $tag)
@@ -171,6 +165,13 @@
             });
           </script>
         @endif
+      </div>
+      
+      <div class="flex justify-start">
+        <a href="{{ route('wochenberichte.pdf', ['path' => $path]) }}"
+           class="inline-flex items-center px-4 py-2 bg-white text-black rounded hover:bg-gray-200">
+          PDF herunterladen
+        </a>
       </div>
     </div>
     

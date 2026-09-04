@@ -49,19 +49,33 @@
       margin: 2px 0;
     }
 
-    .signature-grid {
+    .signature-table {
       width: 100%;
+      border-collapse: collapse;
       margin-top: 30px;
     }
 
-    .signature-box {
-      width: 48%;
-      display: inline-block;
+    .signature-table th {
+      background: #f3f4f6;
+      text-align: left;
+      padding: 8px;
+      border: 1px solid #d1d5db;
+    }
+
+    .signature-cell {
+      width: 50%;
+      height: 120px;
+      padding: 8px;
+      border: 1px solid #d1d5db;
       vertical-align: top;
-      border-top: 1px solid #111827;
-      padding-top: 8px;
-      margin-right: 2%;
-      min-height: 110px;
+    }
+
+    .signature-cell img {
+      max-width: 220px;
+      max-height: 75px;
+      display: block;
+      margin-top: 8px;
+      margin-bottom: 6px;
     }
 
     .signature-box img {
@@ -85,7 +99,6 @@
   <h1>Wochenbericht</h1>
   
   <div class="meta">
-    <p><strong>Berichtsnummer:</strong> {{ $report['berichtsnummer'] ?? '—' }}</p>
     <p><strong>Kalenderwoche:</strong> {{ $report['kalenderwoche'] ?? '—' }}</p>
     <p><strong>Zeitraum:</strong> {{ $report['week_start'] ?? '—' }} bis {{ $report['week_end'] ?? '—' }}</p>
     <p><strong>Name:</strong> {{ $report['user']['name'] ?? $owner->name }}</p>
@@ -98,10 +111,8 @@
   <table>
     <thead>
       <tr>
-        <th style="width: 15%;">Tag</th>
-        <th>Tätigkeiten</th>
-        <th>Gelernt</th>
-        <th>Probleme / Ereignisse</th>
+        <th style="width: 18%;">Tag</th>
+        <th style="width: 82%;">Wochenübersicht</th>
       </tr>
     </thead>
     <tbody>
@@ -112,43 +123,75 @@
               <strong>{{ $tag }}</strong><br>
               <span class="muted">{{ $report['tage'][$tag]['date'] ?? '' }}</span>
             </td>
-            <td class="whitespace">{{ $report['tage'][$tag]['taetigkeiten'] ?? '' }}</td>
-            <td class="whitespace">{{ $report['tage'][$tag]['gelernt'] ?? '' }}</td>
-            <td class="whitespace">{{ $report['tage'][$tag]['probleme'] ?? '' }}</td>
+            <td class="whitespace">
+              @if (! empty($report['tage'][$tag]['taetigkeiten']))
+                {{ $report['tage'][$tag]['taetigkeiten'] }}
+              @endif
+              
+              @if (! empty($report['tage'][$tag]['gelernt']))
+                {{ "\n\n" }}{{ $report['tage'][$tag]['gelernt'] }}
+              @endif
+              
+              @if (! empty($report['tage'][$tag]['probleme']))
+                {{ "\n\nBesondere Ereignisse / Probleme:\n" }}{{ $report['tage'][$tag]['probleme'] }}
+              @endif
+              
+              @if (
+                empty($report['tage'][$tag]['taetigkeiten'])
+                && empty($report['tage'][$tag]['gelernt'])
+                && empty($report['tage'][$tag]['probleme'])
+              )
+                —
+              @endif
+            </td>
           </tr>
         @endif
       @endforeach
     </tbody>
   </table>
   
-  <div class="signature-grid">
-    <div class="signature-box">
-      <strong>Unterschrift Azubi</strong>
-      
-      @if (! empty($report['unterschriften']['azubi']))
-        <p class="muted">
-          {{ $report['unterschriften']['azubi']['name'] }}
-          am {{ $report['unterschriften']['azubi']['signed_at'] }}
-        </p>
-        <img src="{{ $report['unterschriften']['azubi']['image'] }}" alt="Unterschrift Azubi">
-      @else
-        <p class="muted">Noch nicht unterschrieben.</p>
-      @endif
-    </div>
-    
-    <div class="signature-box">
-      <strong>Unterschrift Ausbilder</strong>
-      
-      @if (! empty($report['unterschriften']['ausbilder']))
-        <p class="muted">
-          {{ $report['unterschriften']['ausbilder']['name'] }}
-          am {{ $report['unterschriften']['ausbilder']['signed_at'] }}
-        </p>
-        <img src="{{ $report['unterschriften']['ausbilder']['image'] }}" alt="Unterschrift Ausbilder">
-      @else
-        <p class="muted">Noch nicht unterschrieben.</p>
-      @endif
-    </div>
-  </div>
+  @php
+    $azubiSignatureDate = ! empty($report['unterschriften']['azubi']['signed_at'])
+        ? substr($report['unterschriften']['azubi']['signed_at'], 0, 10)
+        : null;
+
+    $ausbilderSignatureDate = ! empty($report['unterschriften']['ausbilder']['signed_at'])
+        ? substr($report['unterschriften']['ausbilder']['signed_at'], 0, 10)
+        : null;
+  @endphp
+  
+  <table class="signature-table">
+    <thead>
+      <tr>
+        <th style="width: 50%;">Unterschrift Azubi</th>
+        <th style="width: 50%;">Unterschrift Ausbilder</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="signature-cell">
+          @if (! empty($report['unterschriften']['azubi']))
+            <img src="{{ $report['unterschriften']['azubi']['image'] }}" alt="Unterschrift Azubi">
+            <p class="muted">
+              {{ $report['unterschriften']['azubi']['name'] }}, {{ $azubiSignatureDate }}
+            </p>
+          @else
+            <p class="muted">Noch nicht unterschrieben.</p>
+          @endif
+        </td>
+        
+        <td class="signature-cell">
+          @if (! empty($report['unterschriften']['ausbilder']))
+            <img src="{{ $report['unterschriften']['ausbilder']['image'] }}" alt="Unterschrift Ausbilder">
+            <p class="muted">
+              {{ $report['unterschriften']['ausbilder']['name'] }}, {{ $ausbilderSignatureDate }}
+            </p>
+          @else
+            <p class="muted">Noch nicht unterschrieben.</p>
+          @endif
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </body>
 </html>
