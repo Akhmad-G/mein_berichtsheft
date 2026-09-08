@@ -1,5 +1,16 @@
-<form method="post" action="{{ route('tagesberichte.store') }}" class="mt-6 space-y-6">
+@php
+    $report ??= [];
+    $method ??= 'POST';
+    $readonly ??= false;
+    $submitLabel ??= __('Tagesbericht speichern');
+@endphp
+
+<form method="post" action="{{ $action }}" class="mt-6 space-y-6">
     @csrf
+    
+    @if(! in_array(strtoupper($method), ['GET', 'POST']))
+        @method($method)
+    @endif
     
     <x-report-section title="Datum">
         <x-slot name="icon">
@@ -8,20 +19,27 @@
             </svg>
         </x-slot>
         
-        <input type="date" id="date" name="date" value="{{ now()->format('Y-m-d') }}" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+        <input
+            type="date"
+            id="date"
+            name="date"
+            value="{{ old('date', $report['date'] ?? now()->format('Y-m-d')) }}"
+            @readonly($readonly)
+            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+        >
         <x-input-error class="mt-2" :messages="$errors->get('date')" />
     </x-report-section>
     
-    <input type="hidden" id="wochentag" name="wochentag">
-    <input type="hidden" id="ausbildungsjahr" name="ausbildungsjahr">
-    <input type="hidden" id="ausbildungswoche" name="ausbildungswoche">
+    <input type="hidden" id="wochentag" name="wochentag" value="{{ old('wochentag', $report['wochentag'] ?? '') }}">
+    <input type="hidden" id="ausbildungsjahr" name="ausbildungsjahr" value="{{ old('ausbildungsjahr', $report['ausbildungsjahr'] ?? '') }}">
+    <input type="hidden" id="ausbildungswoche" name="ausbildungswoche" value="{{ old('ausbildungswoche', $report['ausbildungswoche'] ?? '') }}">
     
     <x-report-meta-card
         title="Berichtsinformationen"
         :items="[
-          ['label' => 'Wochentag', 'value' => '—', 'id' => 'wochentag-display'],
-          ['label' => 'Ausbildungsjahr', 'value' => '—', 'id' => 'ausbildungsjahr-display'],
-          ['label' => 'Ausbildungswoche', 'value' => '—', 'id' => 'ausbildungswoche-display'],
+          ['label' => 'Wochentag', 'value' => old('wochentag', $report['wochentag'] ?? '—'), 'id' => 'wochentag-display'],
+          ['label' => 'Ausbildungsjahr', 'value' => old('ausbildungsjahr', $report['ausbildungsjahr'] ?? '—'), 'id' => 'ausbildungsjahr-display'],
+          ['label' => 'Ausbildungswoche', 'value' => old('ausbildungswoche', $report['ausbildungswoche'] ?? '—'), 'id' => 'ausbildungswoche-display'],
         ]"
     >
         <x-slot name="icon">
@@ -38,7 +56,13 @@
             </svg>
         </x-slot>
         
-        <x-textarea-input name="taetigkeiten" id="taetigkeiten" cols="30" rows="10">{{ old('taetigkeiten') }}</x-textarea-input>
+        <x-textarea-input
+            name="taetigkeiten"
+            id="taetigkeiten"
+            cols="30"
+            rows="10"
+            :readonly="$readonly"
+        >{{ old('taetigkeiten', $report['taetigkeiten'] ?? '') }}</x-textarea-input>
         <x-input-error :messages="$errors->get('taetigkeiten')" class="mt-2" />
     </x-report-section>
     
@@ -49,7 +73,13 @@
             </svg>
         </x-slot>
         
-        <x-textarea-input name="gelernt" id="gelernt" cols="30" rows="10">{{ old('gelernt') }}</x-textarea-input>
+        <x-textarea-input
+            name="gelernt"
+            id="gelernt"
+            cols="30"
+            rows="10"
+            :readonly="$readonly"
+        >{{ old('gelernt', $report['gelernt'] ?? '') }}</x-textarea-input>
         <x-input-error :messages="$errors->get('gelernt')" class="mt-2" />
     </x-report-section>
     
@@ -60,96 +90,103 @@
             </svg>
         </x-slot>
         
-        <x-textarea-input name="probleme" id="probleme" cols="30" rows="10">{{ old('probleme') }}</x-textarea-input>
+        <x-textarea-input
+            name="probleme"
+            id="probleme"
+            cols="30"
+            rows="10"
+            :readonly="$readonly"
+        >{{ old('probleme', $report['probleme'] ?? '') }}</x-textarea-input>
         <x-input-error :messages="$errors->get('probleme')" class="mt-2" />
     </x-report-section>
     
-{{--    <div class="flex items-center justify-end gap-4 border-t border-gray-200 pt-6 dark:border-gray-700">--}}
-{{--        <x-primary-button>{{ __('Tagesbericht speichern') }}</x-primary-button>--}}
+    @unless($readonly)
+        <div class="flex items-center gap-4">
+            <x-primary-button>{{ $submitLabel }}</x-primary-button>
+            
+            @if (session('status') === 'profile-updated')
+                <p
+                    x-data="{ show: true }"
+                    x-show="show"
+                    x-transition
+                    x-init="setTimeout(() => show = false, 2000)"
+                    class="text-sm text-gray-600 dark:text-gray-400"
+                >{{ __('Saved.') }}</p>
+            @endif
+        </div>
+    @endunless
     
-    <div class="flex items-center gap-4">
-        <x-primary-button>{{ __('Tagesbericht speichern') }}</x-primary-button>
-        
-        @if (session('status') === 'profile-updated')
-            <p
-                x-data="{ show: true }"
-                x-show="show"
-                x-transition
-                x-init="setTimeout(() => show = false, 2000)"
-                class="text-sm text-gray-600 dark:text-gray-400"
-            >{{ __('Saved.') }}</p>
-        @endif
-    </div>
+    @unless($readonly)
+        <script>
+          document.addEventListener('DOMContentLoaded', function () {
+            const dateInput = document.getElementById('date');
     
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const dateInput = document.getElementById('date');
-
-        const wochentagInput = document.getElementById('wochentag');
-        const ausbildungsjahrInput = document.getElementById('ausbildungsjahr');
-        const ausbildungswocheInput = document.getElementById('ausbildungswoche');
-
-        const wochentagDisplay = document.getElementById('wochentag-display');
-        const ausbildungsjahrDisplay = document.getElementById('ausbildungsjahr-display');
-        const ausbildungswocheDisplay = document.getElementById('ausbildungswoche-display');
-
-        const ausbildungsbeginn = @json(auth()->user()->ausbildungsbeginn?->format('Y-m-d'));
-
-        const wochentage = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-
-        function getIsoWeek(date) {
-          const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-          const dayNum = d.getUTCDay() || 7;
-          d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-          const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-          const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-
-          return { week: weekNo, year: d.getUTCFullYear() };
-        }
-
-        function updateFields() {
-          if (!dateInput.value) return;
-          
-          const selectedDate = new Date(dateInput.value + 'T00:00:00');
-
-          const wochentag = wochentage[selectedDate.getDay()];
-          const { week, year } = getIsoWeek(selectedDate);
-          const ausbildungswoche = `KW${week}, ${year}`;
-
-          let ausbildungsjahr = '';
-
-          if (ausbildungsbeginn) {
-            const startDate = new Date(ausbildungsbeginn + 'T00:00:00');
-
-            if (selectedDate < startDate) {
-              ausbildungsjahr = 0;
-            } else {
-              let jahr = selectedDate.getFullYear() - startDate.getFullYear();
-              const anniversaryThisYear = new Date(startDate);
-              anniversaryThisYear.setFullYear(startDate.getFullYear() + jahr);
-
-              if (selectedDate < anniversaryThisYear) {
-                jahr -= 1;
-              }
-
-              ausbildungsjahr = jahr + 1;
+            const wochentagInput = document.getElementById('wochentag');
+            const ausbildungsjahrInput = document.getElementById('ausbildungsjahr');
+            const ausbildungswocheInput = document.getElementById('ausbildungswoche');
+    
+            const wochentagDisplay = document.getElementById('wochentag-display');
+            const ausbildungsjahrDisplay = document.getElementById('ausbildungsjahr-display');
+            const ausbildungswocheDisplay = document.getElementById('ausbildungswoche-display');
+    
+            const ausbildungsbeginn = @json(auth()->user()->ausbildungsbeginn?->format('Y-m-d'));
+    
+            const wochentage = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+    
+            function getIsoWeek(date) {
+              const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+              const dayNum = d.getUTCDay() || 7;
+              d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+              const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+              const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    
+              return { week: weekNo, year: d.getUTCFullYear() };
             }
-          }
-
-          wochentagInput.value = wochentag;
-          ausbildungsjahrInput.value = ausbildungsjahr;
-          ausbildungswocheInput.value = ausbildungswoche;
-
-          wochentagDisplay.textContent = wochentag || '—';
-          ausbildungsjahrDisplay.textContent = ausbildungsjahr || '—';
-          ausbildungswocheDisplay.textContent = ausbildungswoche || '—';
-        }
-
-        dateInput.addEventListener('change', updateFields);
-
-        if (dateInput.value) {
-          updateFields();
-        }
-      });
-    </script>
+    
+            function updateFields() {
+              if (!dateInput.value) return;
+              
+              const selectedDate = new Date(dateInput.value + 'T00:00:00');
+    
+              const wochentag = wochentage[selectedDate.getDay()];
+              const { week, year } = getIsoWeek(selectedDate);
+              const ausbildungswoche = `KW${week}, ${year}`;
+    
+              let ausbildungsjahr = '';
+    
+              if (ausbildungsbeginn) {
+                const startDate = new Date(ausbildungsbeginn + 'T00:00:00');
+    
+                if (selectedDate < startDate) {
+                  ausbildungsjahr = 0;
+                } else {
+                  let jahr = selectedDate.getFullYear() - startDate.getFullYear();
+                  const anniversaryThisYear = new Date(startDate);
+                  anniversaryThisYear.setFullYear(startDate.getFullYear() + jahr);
+    
+                  if (selectedDate < anniversaryThisYear) {
+                    jahr -= 1;
+                  }
+    
+                  ausbildungsjahr = jahr + 1;
+                }
+              }
+    
+              wochentagInput.value = wochentag;
+              ausbildungsjahrInput.value = ausbildungsjahr;
+              ausbildungswocheInput.value = ausbildungswoche;
+    
+              wochentagDisplay.textContent = wochentag || '—';
+              ausbildungsjahrDisplay.textContent = ausbildungsjahr || '—';
+              ausbildungswocheDisplay.textContent = ausbildungswoche || '—';
+            }
+    
+            dateInput.addEventListener('change', updateFields);
+    
+            if (dateInput.value) {
+              updateFields();
+            }
+          });
+        </script>
+    @endunless
 </form>

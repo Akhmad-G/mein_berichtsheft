@@ -73,17 +73,42 @@ class TagesberichtController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $id, GitLabServiceInterface $gitLabService)
     {
-        //
+        $realPath = GitLabPath::decode($id);
+        
+        $report = $gitLabService->getReport(auth()->user(), $realPath);
+        
+        return view('tagesberichte.edit', [
+            'report' => $report,
+            'path' => $id,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id, GitLabServiceInterface $gitLabService)
     {
-        //
+        $realPath = GitLabPath::decode($id);
+        
+        $tagesbericht = $request->validate([
+            'date' => 'required|date',
+            'wochentag' => 'required|string',
+            'ausbildungsjahr' => 'required|numeric',
+            'ausbildungswoche' => ['required', 'string', 'max:255'],
+            'taetigkeiten' => 'required',
+            'gelernt' => 'nullable|string',
+            'probleme' => 'nullable|string',
+        ]);
+        
+        $filename = basename($realPath);
+        
+        $gitLabService->saveReport($request->user(), $filename, $tagesbericht, 'update');
+        
+        return redirect()
+            ->route('tagesberichte.show', ['path' => $id])
+            ->with('success', 'Tagesbericht aktualisiert.');
     }
 
     /**
