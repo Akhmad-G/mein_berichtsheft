@@ -27,18 +27,18 @@
         <h3 class="font-semibold mb-3 text-white text-center">{{ $tag }}</h3>
         
         <x-input-label for="taetigkeiten" :value="__('Tätigkeiten')" />
-        <textarea name="tage[{{ $tag }}][taetigkeiten]" id="taetigkeiten" rows="4" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"></textarea>
+        <x-textarea-input name="tage[{{ $tag }}][taetigkeiten]" id="taetigkeiten" rows="4">{{ old('taetigkeiten') }}</x-textarea-input>
         
 
         <x-input-label for="gelernt" :value="__('Was habe ich gelernt?')" />
-        <textarea name="tage[{{ $tag }}][gelernt]" id="gelernt" cols="30" rows="4" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"></textarea>
+        <x-textarea-input name="tage[{{ $tag }}][gelernt]" id="gelernt" cols="30" rows="4">{{ old('gelernt') }}</x-textarea-input>
         <x-input-error :messages="$errors->get('gelernt')" class="mt-2" />
 
 {{--        <x-input-label for="gelernt" :value="__('Was habe ich gelernt?')" />--}}
 {{--        <textarea name="tage[{{ $tag }}][gelernt]" id="gelernt" rows="2" class="w-full mb-2"></textarea>--}}
         
         <x-input-label for="probleme" :value="__('Besondere Ereignisse / Probleme')" />
-        <textarea name="tage[{{ $tag }}][probleme]" id="probleme" cols="30" rows="4" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"></textarea>
+        <x-textarea-input name="tage[{{ $tag }}][probleme]" id="probleme" cols="30" rows="4">{{ old('probleme') }}</x-textarea-input>
         <x-input-error :messages="$errors->get('probleme')" class="mt-2" />
       </div>
     @endforeach
