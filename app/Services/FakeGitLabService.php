@@ -57,4 +57,9 @@ class FakeGitLabService implements GitLabServiceInterface
       'taetigkeiten' => 'Fake-Inhalt für ' . $path,
     ];
   }
+    
+    public function deleteReport(User $user, string $path): void
+    {
+        Storage::delete("fake-gitlab/{$path}");
+    }
 }

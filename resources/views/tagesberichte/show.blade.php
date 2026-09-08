@@ -25,6 +25,18 @@
                     Bearbeiten
                 </a>
                 
+                <form method="POST"
+                      action="{{ route('tagesberichte.destroy', ['tagesberichte' => \App\Support\GitLabPath::encode($path)]) }}"
+                      onsubmit="return confirm('Tagesbericht wirklich löschen?');">
+                    @csrf
+                    @method('DELETE')
+                    
+                    <button type="submit"
+                            class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                        Löschen
+                    </button>
+                </form>
+                
                 <a href="{{ route('dashboard') }}" class="inline-block mt-6 text-sm text-gray-900 dark:text-gray-100">
                     ← Zurück zum Dashboard
                 </a>

@@ -13,4 +13,6 @@ interface GitLabServiceInterface
   public function listReports(User $user): array;
 
   public function getReport(User $user, string $path): array;
+    
+    public function deleteReport(User $user, string $path): void;
 }

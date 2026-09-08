@@ -114,8 +114,14 @@ class TagesberichtController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id, GitLabServiceInterface $gitLabService   )
     {
-        //
+        $realPath = GitLabPath::decode($id);
+        
+        $gitLabService->deleteReport(auth()->user(), $realPath);
+        
+        return redirect()
+            ->route('dashboard')
+            ->with('success', 'Tagesbericht gelöscht.');
     }
 }

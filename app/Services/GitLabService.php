@@ -181,4 +181,35 @@ class GitLabService implements GitLabServiceInterface
       
       return json_decode($response->body(), true);
     }
+    
+    public function deleteReport(User $user, string $path): void
+    {
+        $filename = basename($path);
+        
+        $response = Http::withHeaders([
+            'PRIVATE-TOKEN' => $this->token,
+        ])->post("{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/commits", [
+            'branch' => $this->branch,
+            'commit_message' => "Delete {$filename} for {$user->gitlab_path}",
+            'actions' => [
+                [
+                    'action' => 'delete',
+                    'file_path' => $path,
+                ],
+            ],
+        ]);
+        
+        if ($response->failed()) {
+            Log::error('GitLab delete failed', [
+                'user_id' => $user->id,
+                'file_path' => $path,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            
+            throw new \RuntimeException(
+                "GitLab delete failed for {$path}: {$response->status()} {$response->body()}"
+            );
+        }
+    }
 }
