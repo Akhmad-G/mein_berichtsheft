@@ -2,6 +2,7 @@
     $report ??= [];
     $method ??= 'POST';
     $readonly ??= false;
+    $autoload ??= true;
     $submitLabel ??= __('Wochenbericht speichern');
 
     $weekValue = old('week', isset($report['week_start'])
@@ -82,7 +83,7 @@
   </form>
 </div>
 
-@unless($readonly)
+@if(! $readonly && $autoload)
     <script>
       document.addEventListener('DOMContentLoaded', function () {
         const weekInput = document.getElementById('week');
@@ -129,4 +130,4 @@
         ladeTagesberichte();
       });
     </script>
-@endunless
+@endif

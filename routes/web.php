@@ -24,7 +24,7 @@ Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
 
 Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
     Route::resource('tagesberichte', TagesberichtController::class)->except(['show']);
-    Route::resource('wochenberichte', WochenberichtController::class)->except(['show', 'edit']);
+    Route::resource('wochenberichte', WochenberichtController::class)->except(['show']);
     
     Route::get('/tagesberichte/{path}', [TagesberichtController::class, 'show'])->name('tagesberichte.show');
     

@@ -126,25 +126,107 @@ class WochenberichtController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $id, GitLabServiceInterface $gitLabService)
     {
-        //
+        $realPath = GitLabPath::decode($id);
+        $reportOwner = $this->authorizeReportPath($realPath);
+        
+        if (! auth()->user()->isAzubi() || auth()->id() !== $reportOwner->id) {
+            abort(403, 'Nur der Azubi darf eigene Wochenberichte bearbeiten.');
+        }
+        
+        $report = $gitLabService->getReport($reportOwner, $realPath);
+        
+        return view('wochenberichte.edit', [
+            'report' => $report,
+            'path' => $id,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id, GitLabServiceInterface $gitLabService)
     {
-        //
+        $realPath = GitLabPath::decode($id);
+        $reportOwner = $this->authorizeReportPath($realPath);
+        
+        if (! auth()->user()->isAzubi() || auth()->id() !== $reportOwner->id) {
+            abort(403, 'Nur der Azubi darf eigene Wochenberichte bearbeiten.');
+        }
+        
+        $validated = $request->validate([
+            'week' => 'required|string',
+            'tage' => 'required|array',
+            'tage.*.taetigkeiten' => 'nullable|string',
+            'tage.*.gelernt' => 'nullable|string',
+            'tage.*.probleme' => 'nullable|string',
+            'tage.*.ausbildungsplan' => 'nullable|string',
+        ]);
+        
+        $existing = $gitLabService->getReport($reportOwner, $realPath);
+        
+        $weekStart = $this->parseWeekStart($validated['week']);
+        $weekEnd = $weekStart->copy()->addDays(4);
+        
+        [$year, $weekNumber] = explode('-W', $validated['week']);
+        
+        $tage = [];
+        foreach ($this->wochentage as $index => $tag) {
+            $date = $weekStart->copy()->addDays($index);
+            
+            $tage[$tag] = [
+                'date' => $date->format('Y-m-d'),
+                'taetigkeiten' => $validated['tage'][$tag]['taetigkeiten'] ?? '',
+                'gelernt' => $validated['tage'][$tag]['gelernt'] ?? '',
+                'probleme' => $validated['tage'][$tag]['probleme'] ?? '',
+                'ausbildungsplan' => $validated['tage'][$tag]['ausbildungsplan'] ?? '',
+            ];
+        }
+        
+        $data = [
+            'berichtsnummer' => $existing['berichtsnummer'] ?? null,
+            'kalenderwoche' => "KW {$weekNumber} / {$year}",
+            'week_start' => $weekStart->format('Y-m-d'),
+            'week_end' => $weekEnd->format('Y-m-d'),
+            'user' => $existing['user'] ?? [
+                    'name' => $reportOwner->name,
+                    'ausbildungsberuf' => $reportOwner->ausbildungsberuf,
+                    'ausbildungsbetrieb' => $reportOwner->ausbildungsbetrieb,
+                ],
+            'tage' => $tage,
+            'unterschriften' => $existing['unterschriften'] ?? [
+                    'azubi' => null,
+                    'ausbilder' => null,
+                ],
+            'created_at' => $existing['created_at'] ?? now()->toIso8601String(),
+            'updated_at' => now()->toIso8601String(),
+        ];
+        
+        $gitLabService->saveReport($reportOwner, basename($realPath), $data, 'update');
+        
+        return redirect()
+            ->route('wochenberichte.show', ['path' => $id])
+            ->with('success', 'Wochenbericht aktualisiert.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id, GitLabServiceInterface $gitLabService)
     {
-        //
+        $realPath = GitLabPath::decode($id);
+        $reportOwner = $this->authorizeReportPath($realPath);
+        
+        if (! auth()->user()->isAzubi() || auth()->id() !== $reportOwner->id) {
+            abort(403, 'Nur der Azubi darf eigene Wochenberichte löschen.');
+        }
+        
+        $gitLabService->deleteReport($reportOwner, $realPath);
+        
+        return redirect()
+            ->route('dashboard')
+            ->with('success', 'Wochenbericht gelöscht.');
     }
     
     private function parseWeekStart(mixed $week) {
