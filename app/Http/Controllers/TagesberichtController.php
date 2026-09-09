@@ -64,9 +64,12 @@ class TagesberichtController extends Controller
         
         $report = $gitLabService->getReport(auth()->user(), $realPath);
         
+        $canManage = auth()->user()->isAzubi();
+        
         return view('tagesberichte.show', [
             'report' => $report,
             'path' => $realPath,
+            'canManage' => $canManage,
         ]);
     }
 
@@ -78,6 +81,10 @@ class TagesberichtController extends Controller
         $realPath = GitLabPath::decode($id);
         
         $report = $gitLabService->getReport(auth()->user(), $realPath);
+        
+        if (! auth()->user()->isAzubi()) {
+            abort(403, 'Nur Azubis dürfen Tagesberichte bearbeiten.');
+        }
         
         return view('tagesberichte.edit', [
             'report' => $report,
@@ -91,6 +98,10 @@ class TagesberichtController extends Controller
     public function update(Request $request, string $id, GitLabServiceInterface $gitLabService)
     {
         $realPath = GitLabPath::decode($id);
+        
+        if (! auth()->user()->isAzubi()) {
+            abort(403, 'Nur Azubis dürfen Tagesberichte bearbeiten.');
+        }
         
         $tagesbericht = $request->validate([
             'date' => 'required|date',
@@ -119,6 +130,10 @@ class TagesberichtController extends Controller
         $realPath = GitLabPath::decode($id);
         
         $gitLabService->deleteReport(auth()->user(), $realPath);
+        
+        if (! auth()->user()->isAzubi()) {
+            abort(403, 'Nur Azubis dürfen Tagesberichte bearbeiten.');
+        }
         
         return redirect()
             ->route('dashboard')
