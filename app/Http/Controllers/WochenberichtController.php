@@ -117,9 +117,16 @@ class WochenberichtController extends Controller
         
         $report = $gitLabService->getReport($reportOwner, $realPath);
         
+        $hasSignature = ! empty($report['unterschriften']['ausbilder']);
+        
+        $canManage = auth()->user()->isAzubi()
+            && auth()->id() === $reportOwner->id
+            && ! $hasSignature;
+        
         return view('wochenberichte.show', [
             'report' => $report,
             'path' => GitLabPath::encode($realPath),
+            'canManage' => $canManage,
         ]);
     }
 
@@ -131,11 +138,14 @@ class WochenberichtController extends Controller
         $realPath = GitLabPath::decode($id);
         $reportOwner = $this->authorizeReportPath($realPath);
         
-        if (! auth()->user()->isAzubi() || auth()->id() !== $reportOwner->id) {
-            abort(403, 'Nur der Azubi darf eigene Wochenberichte bearbeiten.');
+        $report = $gitLabService->getReport($reportOwner, $realPath);
+        
+        $hasSignature = ! empty($report['unterschriften']['ausbilder']);
+        
+        if (! auth()->user()->isAzubi() || auth()->id() !== $reportOwner->id || $hasSignature) {
+            abort(403, 'Signierte Wochenberichte dürfen nicht bearbeitet werden.');
         }
         
-        $report = $gitLabService->getReport($reportOwner, $realPath);
         
         return view('wochenberichte.edit', [
             'report' => $report,
@@ -151,8 +161,12 @@ class WochenberichtController extends Controller
         $realPath = GitLabPath::decode($id);
         $reportOwner = $this->authorizeReportPath($realPath);
         
-        if (! auth()->user()->isAzubi() || auth()->id() !== $reportOwner->id) {
-            abort(403, 'Nur der Azubi darf eigene Wochenberichte bearbeiten.');
+        $existing = $gitLabService->getReport($reportOwner, $realPath);
+        
+        $hasSignature = ! empty($existing['unterschriften']['ausbilder']);
+        
+        if (! auth()->user()->isAzubi() || auth()->id() !== $reportOwner->id || $hasSignature) {
+            abort(403, 'Signierte Wochenberichte dürfen nicht bearbeitet werden.');
         }
         
         $validated = $request->validate([
@@ -164,7 +178,6 @@ class WochenberichtController extends Controller
             'tage.*.ausbildungsplan' => 'nullable|string',
         ]);
         
-        $existing = $gitLabService->getReport($reportOwner, $realPath);
         
         $weekStart = $this->parseWeekStart($validated['week']);
         $weekEnd = $weekStart->copy()->addDays(4);
@@ -218,8 +231,12 @@ class WochenberichtController extends Controller
         $realPath = GitLabPath::decode($id);
         $reportOwner = $this->authorizeReportPath($realPath);
         
-        if (! auth()->user()->isAzubi() || auth()->id() !== $reportOwner->id) {
-            abort(403, 'Nur der Azubi darf eigene Wochenberichte löschen.');
+        $report = $gitLabService->getReport($reportOwner, $realPath);
+        
+        $hasSignature = ! empty($report['unterschriften']['ausbilder']);
+        
+        if (! auth()->user()->isAzubi() || auth()->id() !== $reportOwner->id || $hasSignature) {
+            abort(403, 'Signierte Wochenberichte dürfen nicht gelöscht werden.');
         }
         
         $gitLabService->deleteReport($reportOwner, $realPath);

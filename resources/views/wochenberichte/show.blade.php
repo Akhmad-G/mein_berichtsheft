@@ -164,22 +164,24 @@
       </div>
         
         <div class="flex justify-start gap-4">
-            <a href="{{ route('wochenberichte.edit', ['wochenberichte' => $path]) }}"
-               class="inline-flex items-center px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">
-                Bearbeiten
-            </a>
-            
-            <form method="POST"
-                  action="{{ route('wochenberichte.destroy', ['wochenberichte' => $path]) }}"
-                  onsubmit="return confirm('Wochenbericht wirklich löschen?');">
-                @csrf
-                @method('DELETE')
+            @if($canManage)
+                <a href="{{ route('wochenberichte.edit', ['wochenberichte' => $path]) }}"
+                   class="inline-flex items-center px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">
+                    Bearbeiten
+                </a>
                 
-                <button type="submit"
-                        class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                    Löschen
-                </button>
-            </form>
+                <form method="POST"
+                      action="{{ route('wochenberichte.destroy', ['wochenberichte' => $path]) }}"
+                      onsubmit="return confirm('Wochenbericht wirklich löschen?');">
+                    @csrf
+                    @method('DELETE')
+                    
+                    <button type="submit"
+                            class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                        Löschen
+                    </button>
+                </form>
+            @endif
             
             <a href="{{ route('wochenberichte.pdf', ['path' => $path]) }}"
                class="inline-flex items-center px-4 py-2 bg-white text-black rounded hover:bg-gray-200">
