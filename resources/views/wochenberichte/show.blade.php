@@ -1,5 +1,6 @@
-@include('wochenberichte.page', [
+@include('reports.page', [
   'title' => __('Wochenbericht') . ' — ' . ($report['kalenderwoche'] ?? $report['week_label'] ?? ''),
+  'formView' => 'wochenberichte.form',
   'action' => '#',
   'method' => 'GET',
   'report' => $report,

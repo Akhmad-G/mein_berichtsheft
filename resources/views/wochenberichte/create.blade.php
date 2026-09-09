@@ -1,5 +1,6 @@
-@include('wochenberichte.page', [
+@include('reports.page', [
   'title' => __('Neuer Wochenbericht'),
+  'formView' => 'wochenberichte.form',
   'action' => route('wochenberichte.store'),
   'method' => 'POST',
   'report' => [],

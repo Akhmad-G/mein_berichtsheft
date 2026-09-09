@@ -1,5 +1,6 @@
-@include('tagesberichte.page', [
+@include('reports.page', [
     'title' => __('Tagesbericht') . ' — ' . ($report['date'] ?? ''),
+    'formView' => 'tagesberichte.form',
     'action' => '#',
     'method' => 'GET',
     'report' => $report,
@@ -7,14 +8,14 @@
     'submitLabel' => '',
     'actions' => new \Illuminate\Support\HtmlString(
         view('reports.actions', [
-        'canManage' => $canManage,
-        'editRoute' => route('tagesberichte.edit', [
-            'tagesberichte' => \App\Support\GitLabPath::encode($path),
+            'canManage' => $canManage,
+            'editRoute' => route('tagesberichte.edit', [
+                'tagesberichte' => \App\Support\GitLabPath::encode($path),
             ]),
-        'destroyRoute' => route('tagesberichte.destroy', [
-            'tagesberichte' => \App\Support\GitLabPath::encode($path),
+            'destroyRoute' => route('tagesberichte.destroy', [
+                'tagesberichte' => \App\Support\GitLabPath::encode($path),
             ]),
-        'deleteConfirm' => 'Tagesbericht wirklich löschen?',
+            'deleteConfirm' => 'Tagesbericht wirklich löschen?',
         ])->render()
     ),
 ])
