@@ -8,14 +8,16 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-4 flex items-center gap-4">
-                  <a href="{{ route('tagesberichte.create') }}">
-                    <x-primary-button>{{ __('Neuer Tagesbericht') }}</x-primary-button>
-                  </a>
-                  <a href="{{ route('wochenberichte.create') }}">
-                    <x-primary-button>{{ __('Neuer Wochenbericht') }}</x-primary-button>
-                  </a>
-                </div>
+                @unless(auth()->user()->isAusbilder())
+                    <div class="p-4 flex items-center gap-4">
+                        <a href="{{ route('tagesberichte.create') }}">
+                            <x-primary-button>{{ __('Neuer Tagesbericht') }}</x-primary-button>
+                        </a>
+                        <a href="{{ route('wochenberichte.create') }}">
+                            <x-primary-button>{{ __('Neuer Wochenbericht') }}</x-primary-button>
+                        </a>
+                    </div>
+                @endunless
             </div>
             <div class="mt-4 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="flex items-center gap-4">

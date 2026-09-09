@@ -26,6 +26,10 @@ class WochenberichtController extends Controller
      */
     public function create()
     {
+        if (! auth()->user()->isAzubi()) {
+            abort(403, 'Nur Azubis dürfen Wochenberichte erstellen.');
+        }
+        
         return view('wochenberichte.create');
     }
     
@@ -55,6 +59,10 @@ class WochenberichtController extends Controller
      */
     public function store(Request $request, GitLabServiceInterface $gitLabService)
     {
+        if (! auth()->user()->isAzubi()) {
+            abort(403, 'Nur Azubis dürfen Wochenberichte erstellen.');
+        }
+        
         $validated = $request->validate([
             'week' => 'required|string',
             'tage' => 'required|array',

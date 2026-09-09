@@ -22,6 +22,10 @@ class TagesberichtController extends Controller
      */
     public function create(Request $request)
     {
+        if (! $request->user()->isAzubi()) {
+            abort(403, 'Nur Azubis dürfen Tagesberichte erstellen.');
+        }
+        
         return view('tagesberichte.create', [
           'user' => $request->user(),
           'ausbildungsbeginn' => auth()->user()->ausbildungsbeginn?->format('Y-m-d'),
@@ -33,7 +37,10 @@ class TagesberichtController extends Controller
      */
     public function store(Request $request, GitLabServiceInterface $gitLabService)
     {
-//        dd($request->all());
+        if (! $request->user()->isAzubi()) {
+            abort(403, 'Nur Azubis dürfen Tagesberichte erstellen.');
+        }
+        
       $tagesbericht = $request->validate([
         'date' => 'required|date',
         'wochentag' => 'required|string',
