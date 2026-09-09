@@ -9,16 +9,12 @@
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
       
       <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-        @foreach (['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'] as $tag)
-          @if (! empty($report['tage'][$tag]))
-            <div class="mb-6">
-              <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ $tag }}</span>
-              <p class="whitespace-pre-line text-gray-700 dark:text-gray-300">{{ $report['tage'][$tag]['taetigkeiten'] ?? '' }}</p>
-              <p class="whitespace-pre-line text-gray-700 dark:text-gray-300">{{ $report['tage'][$tag]['gelernt'] ?? '' }}</p>
-              <p class="whitespace-pre-line text-gray-700 dark:text-gray-300">{{ $report['tage'][$tag]['probleme'] ?? '' }}</p>
-            </div>
-          @endif
-        @endforeach
+          @include('wochenberichte.form', [
+            'action' => '#',
+            'method' => 'GET',
+            'report' => $report,
+            'readonly' => true,
+          ])
       </div>
       
       <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
