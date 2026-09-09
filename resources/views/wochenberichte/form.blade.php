@@ -45,7 +45,7 @@
       <div class="mb-6 p-4 border border-gray-700 rounded">
         <h3 class="font-semibold mb-3 text-white text-center">{{ $tag }}</h3>
         
-        <x-input-label for="taetigkeiten" :value="__('Tätigkeiten')" />
+        <x-input-label for="taetigkeiten-{{ $tag }}" :value="__('Tätigkeiten')" />
         <x-textarea-input
             name="tage[{{ $tag }}][taetigkeiten]"
             id="taetigkeiten-{{ $tag }}"
@@ -53,7 +53,7 @@
             :readonly="$readonly"
         >{{ old("tage.$tag.taetigkeiten", $report['tage'][$tag]['taetigkeiten'] ?? '') }}</x-textarea-input>
         
-        <x-input-label for="gelernt" :value="__('Was habe ich gelernt?')" />
+        <x-input-label for="gelernt-{{ $tag }}" :value="__('Was habe ich gelernt?')" />
         <x-textarea-input
             name="tage[{{ $tag }}][gelernt]"
             id="gelernt-{{ $tag }}"
@@ -63,7 +63,7 @@
         >{{ old("tage.$tag.gelernt", $report['tage'][$tag]['gelernt'] ?? '') }}</x-textarea-input>
         <x-input-error :messages="$errors->get('gelernt')" class="mt-2" />
 
-        <x-input-label for="probleme" :value="__('Besondere Ereignisse / Probleme')" />
+        <x-input-label for="probleme-{{ $tag }}" :value="__('Besondere Ereignisse / Probleme')" />
         <x-textarea-input
             name="tage[{{ $tag }}][probleme]"
             id="probleme-{{ $tag }}"

@@ -129,11 +129,11 @@ class TagesberichtController extends Controller
     {
         $realPath = GitLabPath::decode($id);
         
-        $gitLabService->deleteReport(auth()->user(), $realPath);
-        
         if (! auth()->user()->isAzubi()) {
             abort(403, 'Nur Azubis dürfen Tagesberichte bearbeiten.');
         }
+        
+        $gitLabService->deleteReport(auth()->user(), $realPath);
         
         return redirect()
             ->route('dashboard')
