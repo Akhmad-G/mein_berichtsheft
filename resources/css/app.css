@@ -1,3 +1,60 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+@import 'tailwindcss';
+
+@source '../views/**/*.blade.php';
+@source '../js/**/*.js';
+@source '../../storage/framework/views/*.php';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@plugin '@tailwindcss/forms';
+
+@theme {
+  --font-display: 'Fraunces', serif;
+  --font-sans: 'IBM Plex Sans', sans-serif;
+
+  --color-paper: #F5F0E6;
+  --color-paper-raised: #ECE2CC;
+  --color-paper-line: #FBF8F1;
+  --color-ink: #20262C;
+  --color-ink-soft: #5B6470;
+  --color-rule: #CBB994;
+  --color-stamp: #8B3A2B;
+  --color-stamp-soft: #F1DED7;
+  --color-signed: #3F5D42;
+  --color-signed-soft: #E1E8DC;
+}
+
+.dark {
+  --color-paper: #1B1E22;
+  --color-paper-raised: #262A2E;
+  --color-paper-line: #212529;
+  --color-ink: #EDE7D8;
+  --color-ink-soft: #A9A79C;
+  --color-rule: #3A3E3C;
+  --color-stamp: #D98066;
+  --color-stamp-soft: #3A2622;
+  --color-signed: #8FB58F;
+  --color-signed-soft: #23301F;
+}
+
+@layer utilities {
+  @keyframes pop-in {
+    from { opacity: 0; transform: scale(0.4); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .animate-pop-in {
+    animation: pop-in 0.4s ease forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-pop-in {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
