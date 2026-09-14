@@ -5,8 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title>{{ config('app.name', 'Mein Tagesbericht') }}</title>
-
-        <link rel="icon" href="{{ asset('favicon.ico') }}">
+        
+        <link rel="icon" href="{{ asset('favicon-light.ico') }}" media="(prefers-color-scheme: light)">
+        <link rel="icon" href="{{ asset('favicon-dark.ico') }}" media="(prefers-color-scheme: dark)">
         
         <script>
             (function () {
@@ -101,7 +102,7 @@
             {{-- Wochenbericht-Vorschau --}}
             <div class="bg-paper-line border border-rule rounded-xl px-6 pt-6 pb-6 max-w-sm md:ml-auto shadow-[0_18px_40px_-20px_rgba(32,38,44,0.25)]">
                 <div class="flex justify-between items-baseline mb-4">
-                    <span class="font-display text-[17px]">Woche 24</span>
+                    <span class="font-display text-[17px]">KW 36</span>
                     <span class="text-[13px] text-ink-soft">09.–13. Juni</span>
                 </div>
 
