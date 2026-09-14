@@ -28,12 +28,12 @@
                 <nav class="max-w-5xl mx-auto flex items-center justify-between px-8 py-6">
                     <div class="flex items-center gap-2.5">
                         <svg viewBox="0 0 120 120" class="w-7 h-7" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="10" y="38" width="16" height="44" rx="6" fill="#20262C"/>
-                            <rect x="30" y="38" width="16" height="44" rx="6" fill="#20262C"/>
-                            <rect x="50" y="38" width="16" height="44" rx="6" fill="#20262C"/>
-                            <rect x="70" y="38" width="16" height="44" rx="6" fill="#20262C"/>
-                            <rect x="90" y="38" width="16" height="44" rx="6" fill="#8B3A2B"/>
-                            <path d="M93.5 60 L97 64.5 L103 51" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                            <rect x="10" y="38" width="16" height="44" rx="6" class="fill-ink"/>
+                            <rect x="30" y="38" width="16" height="44" rx="6" class="fill-ink"/>
+                            <rect x="50" y="38" width="16" height="44" rx="6" class="fill-ink"/>
+                            <rect x="70" y="38" width="16" height="44" rx="6" class="fill-ink"/>
+                            <rect x="90" y="38" width="16" height="44" rx="6" class="fill-stamp"/>
+                            <path d="M93.5 60 L97 64.5 L103 51" fill="none" class="stroke-paper" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                         <span class="font-display text-lg font-medium">{{ config('app.name', 'Mein Tagesbericht') }}</span>
                     </div>
@@ -84,8 +84,8 @@
                 </h1>
                 <p class="mt-5 text-[17px] leading-relaxed text-ink-soft max-w-sm">
                     Tagesberichte schreibst du, wann sie passieren — jederzeit bearbeitbar oder löschbar.
-                    Dein Wochenbericht übernimmt sie automatisch; was nicht passt, änderst du direkt dort,
-                    bevor er unterschrieben wird.
+                    Dein Wochenbericht übernimmt sie automatisch. Was nicht passt, kannst du direkt dort ändern
+                    – oder den Wochenbericht komplett von Grund auf neu schreiben, bevor er unterschrieben wird.
                 </p>
                 <div class="flex gap-3.5 mt-8">
                     @if (Route::has('register'))
@@ -119,9 +119,9 @@
                 @endforeach
 
                 <div class="flex items-center justify-between mt-4 pt-4 border-t border-rule">
-                    <svg viewBox="0 0 96 34" class="w-24 h-[34px]">
+                    <svg viewBox="0 0 96 34" class="w-24 h-[34px] text-ink">
                         <path d="M4 26 Q10 8 16 22 Q20 30 26 18 Q30 8 34 20 Q40 32 48 14 Q52 6 58 18 Q64 28 72 12 Q78 4 84 16"
-                              fill="none" stroke="#20262C" stroke-width="2" stroke-linecap="round"/>
+                              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                     </svg>
                     <span class="flex items-center gap-1.5 bg-stamp-soft text-stamp text-[12.5px] font-medium px-2.5 py-1.5 rounded-full">
                         <svg viewBox="0 0 12 12" class="w-3 h-3"><path d="M1 6 L4.5 9.5 L11 2" fill="none" stroke="#8B3A2B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
