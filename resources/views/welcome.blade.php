@@ -40,18 +40,7 @@
                     </div>
 
                     <div class="flex gap-3 items-center">
-                        <button id="theme-toggle" type="button" aria-label="Theme wechseln"
-                                class="p-2 rounded-md border border-rule">
-                            <svg viewBox="0 0 24 24" class="w-4 h-4 hidden dark:block text-ink">
-                                <circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
-                                <path d="M12 2.5v2.5M12 19v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12H5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"
-                                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                            </svg>
-                            <svg viewBox="0 0 24 24" class="w-4 h-4 block dark:hidden text-ink">
-                                <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z"
-                                      fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
+                        <x-theme-toggle/>
 
                         @auth
                             @if (Auth::user()->ausbildung_info_completed_at)
@@ -250,16 +239,6 @@
             <span>{{ config('app.name', 'Mein Tagesbericht') }}</span>
             <span>Für Ausbildungsbetriebe in Deutschland</span>
         </footer>
-
-        <script>
-            var themeToggle = document.getElementById('theme-toggle');
-            if (themeToggle) {
-                themeToggle.addEventListener('click', function () {
-                    var isDark = document.documentElement.classList.toggle('dark');
-                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                });
-            }
-        </script>
-
+        
     </body>
 </html>

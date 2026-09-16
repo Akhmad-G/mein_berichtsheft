@@ -14,9 +14,5 @@
         {{ $attributes->except(['id', 'class']) }}
     />
 
-    @if ($hint && ! $errors->has($name))
-        <p class="text-[12.5px] text-ink-soft">{{ $hint }}</p>
-    @endif
-
-    <x-form.error :messages="$errors->get($name)" />
+    <x-form.error :messages="$errors->get($name)" :hint="$hint" />
 </div>
