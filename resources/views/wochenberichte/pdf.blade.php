@@ -97,7 +97,7 @@
 </head>
 <body>
   <h1>Wochenbericht</h1>
-  
+
   <div class="meta">
     <p><strong>Kalenderwoche:</strong> {{ $report['kalenderwoche'] ?? '—' }}</p>
     <p><strong>Zeitraum:</strong> {{ $report['week_start'] ?? '—' }} bis {{ $report['week_end'] ?? '—' }}</p>
@@ -105,9 +105,9 @@
     <p><strong>Ausbildungsberuf:</strong> {{ $report['user']['ausbildungsberuf'] ?? '—' }}</p>
     <p><strong>Ausbildungsbetrieb:</strong> {{ $report['user']['ausbildungsbetrieb'] ?? '—' }}</p>
   </div>
-  
+
   <h2>Bericht</h2>
-  
+
   <table>
     <thead>
       <tr>
@@ -120,22 +120,21 @@
         @if (! empty($report['tage'][$tag]))
           <tr>
             <td>
-              <strong>{{ $tag }}</strong><br>
-              <span class="muted">{{ $report['tage'][$tag]['date'] ?? '' }}</span>
+              <strong>{{ $tag }}</strong><br> <span class="muted">{{ $report['tage'][$tag]['date'] ?? '' }}</span>
             </td>
             <td class="whitespace">
               @if (! empty($report['tage'][$tag]['taetigkeiten']))
                 {{ $report['tage'][$tag]['taetigkeiten'] }}
               @endif
-              
+
               @if (! empty($report['tage'][$tag]['gelernt']))
                 {{ "\n\n" }}{{ $report['tage'][$tag]['gelernt'] }}
               @endif
-              
+
               @if (! empty($report['tage'][$tag]['probleme']))
                 {{ "\n\nBesondere Ereignisse / Probleme:\n" }}{{ $report['tage'][$tag]['probleme'] }}
               @endif
-              
+
               @if (
                 empty($report['tage'][$tag]['taetigkeiten'])
                 && empty($report['tage'][$tag]['gelernt'])
@@ -149,7 +148,7 @@
       @endforeach
     </tbody>
   </table>
-  
+
   @php
     $azubiSignatureDate = ! empty($report['unterschriften']['azubi']['signed_at'])
         ? substr($report['unterschriften']['azubi']['signed_at'], 0, 10)
@@ -159,7 +158,7 @@
         ? substr($report['unterschriften']['ausbilder']['signed_at'], 0, 10)
         : null;
   @endphp
-  
+
   <table class="signature-table">
     <thead>
       <tr>
@@ -171,7 +170,9 @@
       <tr>
         <td class="signature-cell">
           @if (! empty($report['unterschriften']['azubi']))
-            <img src="{{ $report['unterschriften']['azubi']['image'] }}" alt="Unterschrift Azubi">
+            <img src="{{ $report['unterschriften']['azubi']['image'] }}"
+                 alt="Unterschrift Azubi"
+            >
             <p class="muted">
               {{ $report['unterschriften']['azubi']['name'] }}, {{ $azubiSignatureDate }}
             </p>
@@ -179,10 +180,12 @@
             <p class="muted">Noch nicht unterschrieben.</p>
           @endif
         </td>
-        
+
         <td class="signature-cell">
           @if (! empty($report['unterschriften']['ausbilder']))
-            <img src="{{ $report['unterschriften']['ausbilder']['image'] }}" alt="Unterschrift Ausbilder">
+            <img src="{{ $report['unterschriften']['ausbilder']['image'] }}"
+                 alt="Unterschrift Ausbilder"
+            >
             <p class="muted">
               {{ $report['unterschriften']['ausbilder']['name'] }}, {{ $ausbilderSignatureDate }}
             </p>

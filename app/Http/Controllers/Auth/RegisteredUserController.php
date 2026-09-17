@@ -14,55 +14,32 @@ use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
-class RegisteredUserController extends Controller
-{
-    /**
-     * Display the registration view.
-     */
-    public function create(): View
-    {
-        return view('auth.register');
-    }
+class RegisteredUserController extends Controller {
+  /**
+   * Display the registration view.
+   */
+  public function create(): View {
+    return view('auth.register');
+  }
 
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws ValidationException
-     */
-    public function store(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'vorname' => ['required', 'string', 'max:255'],
-            'nachname' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'ausbildungsberuf' => ['required', 'string', 'max:255'],
-            'ausbildungsbetrieb' => ['required', 'string', 'max:255'],
-            'abteilung' => ['nullable', 'string', 'max:255'],
-            'ausbildungsbeginn' => ['required', 'date'],
-            'gitlab_einverstanden' => ['accepted'],
-        ]);
+  /**
+   * Handle an incoming registration request.
+   *
+   * @throws ValidationException
+   */
+  public function store(Request $request): RedirectResponse {
+    $validated = $request->validate(['vorname' => ['required', 'string', 'max:255'], 'nachname' => ['required', 'string', 'max:255'], 'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class], 'password' => ['required', 'confirmed', Rules\Password::defaults()], 'ausbildungsberuf' => ['required', 'string', 'max:255'], 'ausbildungsbetrieb' => ['required', 'string', 'max:255'], 'abteilung' => ['nullable', 'string', 'max:255'], 'ausbildungsbeginn' => ['required', 'date'], 'gitlab_einverstanden' => ['accepted'],]);
 
-        $user = User::create([
-            'vorname' => $validated['vorname'],
-            'nachname' => $validated['nachname'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'ausbildungsberuf' => $validated['ausbildungsberuf'],
-            'ausbildungsbetrieb' => $validated['ausbildungsbetrieb'],
-            'abteilung' => $validated['abteilung'] ?? null,
-            'ausbildungsbeginn' => $validated['ausbildungsbeginn'],
-            
-            'role' => UserRole::Azubi,
-            'ausbilder_id' => '1',
-        ]);
-        
-        $user->assignGitLabPathIfMissing();
+    $user = User::create(['vorname' => $validated['vorname'], 'nachname' => $validated['nachname'], 'email' => $validated['email'], 'password' => Hash::make($validated['password']), 'ausbildungsberuf' => $validated['ausbildungsberuf'], 'ausbildungsbetrieb' => $validated['ausbildungsbetrieb'], 'abteilung' => $validated['abteilung'] ?? null, 'ausbildungsbeginn' => $validated['ausbildungsbeginn'],
 
-        event(new Registered($user));
+      'role' => UserRole::Azubi, 'ausbilder_id' => '1',]);
 
-        Auth::login($user);
+    $user->assignGitLabPathIfMissing();
 
-        return redirect(route('dashboard'));
-    }
+    event(new Registered($user));
+
+    Auth::login($user);
+
+    return redirect(route('dashboard'));
+  }
 }

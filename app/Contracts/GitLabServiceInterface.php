@@ -4,15 +4,14 @@ namespace App\Contracts;
 
 use App\Models\User;
 
-interface GitLabServiceInterface
-{
+interface GitLabServiceInterface {
   public function saveReport(User $user, string $filename, array $data, string $action = 'create'): void;
-  
+
   public function getReportsForWeek(User $user, \Carbon\Carbon $weekStart): array;
-  
+
   public function listReports(User $user): array;
 
   public function getReport(User $user, string $path): array;
-    
-    public function deleteReport(User $user, string $path): void;
+
+  public function deleteReport(User $user, string $path): void;
 }

@@ -7,12 +7,10 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
-class DatabaseSeeder extends Seeder
-{
-  public function run(): void
-  {
+class DatabaseSeeder extends Seeder {
+  public function run(): void {
     $gitLabService = app(GitLabServiceInterface::class);
-    
+
     User::withoutEvents(function () use ($gitLabService) {
       // Ein Ausbilder
       $ausbilder = User::factory()->ausbilder()->create([
@@ -21,7 +19,7 @@ class DatabaseSeeder extends Seeder
         'email' => 'andreas.brus@artif.com',
         'password' => '5@3$afg6$JyWsk4F',
       ]);
-      
+
       // Ein „benannter“ Azubi für einen vorhersehbaren Login
       $akhmad = User::factory()->create([
         'vorname' => 'Akhmed',
@@ -37,28 +35,28 @@ class DatabaseSeeder extends Seeder
         'gitlab_path' => "gazimagomedov-akhmed-2",
         'ausbilder_id' => $ausbilder->id,
       ]);
-      
+
       // 3 weitere zufällige Azubi
-//      $azubis = User::factory(3)->create([
-//        'ausbilder_id' => $ausbilder->id,
-//      ]);
-      
+      //      $azubis = User::factory(3)->create([
+      //        'ausbilder_id' => $ausbilder->id,
+      //      ]);
+
       // gitlab_path + test Tagesbericht für alle Azubis
-//      $azubis->push($akhmad)->each(function (User $user) use ($gitLabService) {
-//        $user->assignGitlabPathIfMissing();
-//
-//        $filename = now()->format('Y-m-d') . ' Tagesbericht.json';
-//
-//        $gitLabService->saveReport($user, $filename, [
-//          'date' => now()->format('Y-m-d'),
-//          'wochentag' => now()->translatedFormat('l'),
-//          'ausbildungsjahr' => 1,
-//          'ausbildungswoche' => '1',
-//          'taetigkeiten' => 'Seed-Beispiel für ' . $user->vorname,
-//          'gelernt' => '',
-//          'probleme' => '',
-//        ]);
-//      });
+      //      $azubis->push($akhmad)->each(function (User $user) use ($gitLabService) {
+      //        $user->assignGitlabPathIfMissing();
+      //
+      //        $filename = now()->format('Y-m-d') . ' Tagesbericht.json';
+      //
+      //        $gitLabService->saveReport($user, $filename, [
+      //          'date' => now()->format('Y-m-d'),
+      //          'wochentag' => now()->translatedFormat('l'),
+      //          'ausbildungsjahr' => 1,
+      //          'ausbildungswoche' => '1',
+      //          'taetigkeiten' => 'Seed-Beispiel für ' . $user->vorname,
+      //          'gelernt' => '',
+      //          'probleme' => '',
+      //        ]);
+      //      });
     });
   }
 }

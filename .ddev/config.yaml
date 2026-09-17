@@ -4,8 +4,8 @@ docroot: public
 php_version: "8.4"
 webserver_type: nginx-fpm
 xdebug_enabled: false
-additional_hostnames: []
-additional_fqdns: []
+additional_hostnames: [ ]
+additional_fqdns: [ ]
 omit_containers:
   - db
 #database:
@@ -13,7 +13,7 @@ omit_containers:
 #    version: "11.8"
 use_dns_when_possible: true
 composer_version: "2"
-web_environment: []
+web_environment: [ ]
 corepack_enable: false
 
 web_extra_exposed_ports:

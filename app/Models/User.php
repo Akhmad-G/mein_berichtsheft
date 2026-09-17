@@ -14,94 +14,75 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
-use function Pest\Laravel\get;
 
 #[Fillable([
-    'email', 'password',
-    'vorname', 'nachname', 'ausbildungsberuf',
-    'ausbildungsbetrieb', 'abteilung', 'ausbildungsbeginn',
-    'role', 'ausbilder_id',
-])]
-
+  'email', 'password', 'vorname', 'nachname', 'ausbildungsberuf',
+  'ausbildungsbetrieb', 'abteilung', 'ausbildungsbeginn', 'role', 'ausbilder_id',])]
 #[Hidden(['password', 'remember_token'])]
+class User extends Authenticatable {
+  /** @use HasFactory<UserFactory> */
+  use HasFactory, Notifiable;
 
-class User extends Authenticatable
-{
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+  /**
+   * Get the attributes that should be cast.
+   *
+   * @return array<string, string>
+   */
+  protected function casts(): array {
+    return [
+      'ausbildungsbeginn' => 'date',
+      'email_verified_at' => 'datetime',
+      'password' => 'hashed',
+      'role' => UserRole::class,];
+  }
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'ausbildungsbeginn' => 'date',
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'role' => UserRole::class,
-        ];
+  public function assignGitlabPathIfMissing(): void {
+    if (!$this->isAzubi()) {
+      return;
     }
-  
-    public function assignGitlabPathIfMissing(): void
-    {
-      if (! $this->isAzubi()) {
-        return;
-      }
-      
-      if ($this->gitlab_path) {
-        return;
-      }
-      
-      if (! $this->vorname && ! $this->nachname) {
-        return;
-      }
-      
-      $slug = Str::slug($this->fullNameReversed(), '-', 'de');
-      $this->gitlab_path = "{$slug}-{$this->id}";
-      $this->saveQuietly();
+
+    if ($this->gitlab_path) {
+      return;
     }
-    
-    protected function name(): Attribute
-    {
-      return Attribute::make(
-        get: fn () => trim("{$this->vorname} {$this->nachname}"),
-      );
+
+    if (!$this->vorname && !$this->nachname) {
+      return;
     }
-  
-    public function fullNameReversed(): string
-    {
-      return trim("{$this->nachname} {$this->vorname}");
-    }
-  
-    public function ausbilder(): BelongsTo
-    {
-      return $this->belongsTo(User::class, 'ausbilder_id');
-    }
-    
-    public function azubis(): HasMany
-    {
-      return $this->hasMany(User::class, 'ausbilder_id');
-    }
-    
-    public function isAzubi(): bool
-    {
-      return $this->role === UserRole::Azubi;
-    }
-    
-    public function isAusbilder(): bool
-    {
-      return $this->role === UserRole::Ausbilder;
-    }
-  
-    public function nextBerichtsnummer(): int
-    {
-      $number = $this->next_berichtsnummer;
-      
-      $this->increment('next_berichtsnummer');
-      
-      return $number;
-    }
+
+    $slug = Str::slug($this->fullNameReversed(), '-', 'de');
+    $this->gitlab_path = "{$slug}-{$this->id}";
+    $this->saveQuietly();
+  }
+
+  protected function name(): Attribute {
+    return Attribute::make(get: fn() => trim("{$this->vorname} {$this->nachname}"));
+  }
+
+  public function fullNameReversed(): string {
+    return trim("{$this->nachname} {$this->vorname}");
+  }
+
+  public function ausbilder(): BelongsTo {
+    return $this->belongsTo(User::class, 'ausbilder_id');
+  }
+
+  public function azubis(): HasMany {
+    return $this->hasMany(User::class, 'ausbilder_id');
+  }
+
+  public function isAzubi(): bool {
+    return $this->role === UserRole::Azubi;
+  }
+
+  public function isAusbilder(): bool {
+    return $this->role === UserRole::Ausbilder;
+  }
+
+  public function nextBerichtsnummer(): int {
+    $number = $this->next_berichtsnummer;
+
+    $this->increment('next_berichtsnummer');
+
+    return $number;
+  }
 }

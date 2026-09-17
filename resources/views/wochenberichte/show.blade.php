@@ -1,3 +1,7 @@
+@php
+  use Illuminate\Support\HtmlString;
+@endphp
+
 @include('reports.page', [
   'title' => __('Wochenbericht') . ' — ' . ($report['kalenderwoche'] ?? $report['week_label'] ?? ''),
   'formView' => 'wochenberichte.form',
@@ -7,13 +11,13 @@
   'readonly' => true,
   'autoload' => false,
   'submitLabel' => '',
-  'signatures' => new \Illuminate\Support\HtmlString(
+  'signatures' => new HtmlString(
     view('wochenberichte.signatures', [
       'report' => $report,
       'path' => $path,
     ])->render()
   ),
-  'actions' => new \Illuminate\Support\HtmlString(
+  'actions' => new HtmlString(
     view('reports.actions', [
       'canManage' => $canManage,
       'editRoute' => route('wochenberichte.edit', [

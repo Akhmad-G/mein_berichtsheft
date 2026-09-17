@@ -1,3 +1,8 @@
+@php
+ use Illuminate\Support\HtmlString;
+ use App\Support\GitLabPath;
+@endphp
+
 @include('reports.page', [
     'title' => __('Tagesbericht') . ' — ' . ($report['date'] ?? ''),
     'formView' => 'tagesberichte.form',
@@ -6,14 +11,14 @@
     'report' => $report,
     'readonly' => true,
     'submitLabel' => '',
-    'actions' => new \Illuminate\Support\HtmlString(
+    'actions' => new HtmlString(
         view('reports.actions', [
             'canManage' => $canManage,
             'editRoute' => route('tagesberichte.edit', [
-                'tagesberichte' => \App\Support\GitLabPath::encode($path),
+                'tagesberichte' => GitLabPath::encode($path),
             ]),
             'destroyRoute' => route('tagesberichte.destroy', [
-                'tagesberichte' => \App\Support\GitLabPath::encode($path),
+                'tagesberichte' => GitLabPath::encode($path),
             ]),
             'deleteConfirm' => 'Tagesbericht wirklich löschen?',
         ])->render()
