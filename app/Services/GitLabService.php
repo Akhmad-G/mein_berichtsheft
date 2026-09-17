@@ -33,11 +33,6 @@ class GitLabService implements GitLabServiceInterface
     
     public function saveReport(User $user, string $filename, array $data, string $action = 'create'): void
     {
-//        dd([
-//          'url' => "{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/commits",
-//          'project_id' => $this->projectId,
-//          'branch' => $this->branch,
-//        ]);
         
         if (! $user->gitlab_path) {
           throw new \RuntimeException("User #{$user->id} has no gitlab_path assigned yet.");

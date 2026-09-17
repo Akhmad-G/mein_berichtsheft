@@ -36,8 +36,8 @@ class UserFactory extends Factory
             'ausbilder_id' => null,
             'ausbildungsberuf' => fake('de_DE')->jobTitle(),
             'ausbildungsbetrieb' => fake('de_DE')->company(),
+            'abteilung' => fake('de_DE')->jobTitle(),
             'ausbildungsbeginn' => fake()->dateTimeBetween('now', '+10 years'),
-            'ausbildung_info_completed_at' => \Symfony\Component\Clock\now(),
         ];
     }
   

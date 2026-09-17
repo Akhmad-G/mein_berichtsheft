@@ -32,14 +32,14 @@ class DatabaseSeeder extends Seeder
         'remember_token' => Str::random(10),
         'ausbildungsberuf' => 'Fachinformatiker für Anwendungsentwicklung',
         'ausbildungsbetrieb' => 'artif GmbH & Co. KG',
+        'abteilung' => 'Backend',
         'ausbildungsbeginn' => '2026-09-01 00:00:00',
-        'ausbildung_info_completed_at' => \Symfony\Component\Clock\now(),
         'gitlab_path' => "gazimagomedov-akhmed-2",
         'ausbilder_id' => $ausbilder->id,
       ]);
       
-      // 10 weitere zufällige Azubi
-//      $azubis = User::factory(10)->create([
+      // 3 weitere zufällige Azubi
+//      $azubis = User::factory(3)->create([
 //        'ausbilder_id' => $ausbilder->id,
 //      ]);
       

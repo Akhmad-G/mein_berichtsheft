@@ -7,22 +7,21 @@ use App\Http\Controllers\WochenberichtController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('landing');
 });
 
-Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
   Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
     ->name('dashboard');
 });
 
-Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
+Route::middleware('auth')->group(function () {
     Route::resource('tagesberichte', TagesberichtController::class)->except(['show']);
     Route::resource('wochenberichte', WochenberichtController::class)->except(['show']);
     
@@ -37,16 +36,6 @@ Route::middleware(['auth', 'ausbildung.complete'])->group(function () {
         ->name('wochenberichte.uebernehmen');
     
     Route::post('/wochenberichte/{path}/sign', [WochenberichtController::class, 'sign'])->name('wochenberichte.sign');
-});
-
-// temporarily, delete later
-
-Route::get('/debug/wochenbericht', function () {
-  $user = auth()->user();
-  $service = app(\App\Contracts\GitLabServiceInterface::class);
-  $weekStart = \Carbon\Carbon::now()->startOfWeek();
-  
-  dd($service->getReportsForWeek($user, $weekStart));
 });
 
 require __DIR__.'/auth.php';

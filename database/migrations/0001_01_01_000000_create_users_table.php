@@ -28,8 +28,8 @@ return new class extends Migration
             
             $table->string('ausbildungsberuf')->nullable();
             $table->string('ausbildungsbetrieb')->nullable();
+            $table->string('abteilung')->nullable();
             $table->date('ausbildungsbeginn')->nullable();
-            $table->timestamp('ausbildung_info_completed_at')->nullable();
             
             $table->unsignedInteger('next_berichtsnummer')->default(1);
             

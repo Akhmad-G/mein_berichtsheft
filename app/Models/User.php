@@ -17,20 +17,14 @@ use Illuminate\Support\Str;
 use function Pest\Laravel\get;
 
 #[Fillable([
-  'email', 'password',
-  'vorname', 'nachname', 'ausbildungsberuf',
-  'ausbildungsbetrieb', 'ausbildungsbeginn',
-  'ausbildung_info_completed_at',
+    'email', 'password',
+    'vorname', 'nachname', 'ausbildungsberuf',
+    'ausbildungsbetrieb', 'abteilung', 'ausbildungsbeginn',
+    'role', 'ausbilder_id',
 ])]
 
-// ===
-//protected $fillable = [
-//  'name', 'email', 'password',
-//  'vorname', 'nachname', 'ausbildungsberuf',
-//  'ausbildungsbetrieb', 'ausbildungsbeginn',
-//];
-
 #[Hidden(['password', 'remember_token'])]
+
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -45,22 +39,10 @@ class User extends Authenticatable
     {
         return [
             'ausbildungsbeginn' => 'date',
-            'ausbildung_info_completed_at' => 'datetime',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
         ];
-    }
-  
-    protected static function booted(): void
-    {
-      static::created(function (User $user) {
-        $user->assignGitlabPathIfMissing();
-      });
-      
-      static::updated(function (User $user) {
-        $user->assignGitlabPathIfMissing();
-      });
     }
   
     public function assignGitlabPathIfMissing(): void
