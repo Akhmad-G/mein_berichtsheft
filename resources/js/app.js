@@ -11,4 +11,29 @@ document.querySelectorAll('[data-theme-toggle]').forEach(function (themeToggle) 
   });
 });
 
+document.querySelectorAll('[data-user-menu]').forEach((wrap) => {
+  const button = wrap.querySelector('[data-user-menu-button]');
+  const panel = wrap.querySelector('[data-user-menu-panel]');
+  const chevron = wrap.querySelector('[data-user-menu-chevron]');
+
+  const setOpen = (open) => {
+    panel.hidden = !open;
+    button.setAttribute('aria-expanded', String(open));
+    chevron.classList.toggle('rotate-180', open);
+  };
+
+  button.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setOpen(panel.hidden);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!wrap.contains(e.target)) setOpen(false);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setOpen(false);
+  });
+});
+
 Alpine.start();

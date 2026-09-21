@@ -25,6 +25,18 @@
   --color-stamp-soft: #F1DED7;
   --color-signed: #3F5D42;
   --color-signed-soft: #E1E8DC;
+
+  /* Tagesarten hell */
+  --color-bericht: #3F5D42;
+  --color-bericht-soft: #CFE0CB;
+  --color-urlaub: #9A6B15;
+  --color-urlaub-soft: #F6E3B8;
+  --color-krank: #8B3A2B;
+  --color-krank-soft: #F3D3CB;
+  --color-schule: #2F5A74;
+  --color-schule-soft: #CFE0EC;
+  --color-fest: #6B4478;
+  --color-fest-soft: #E8D8EE;
 }
 
 .dark {
@@ -38,6 +50,17 @@
   --color-stamp-soft: #3A2622;
   --color-signed: #8FB58F;
   --color-signed-soft: #23301F;
+
+  --color-bericht: #8FB58F;
+  --color-bericht-soft: #273A28;
+  --color-urlaub: #D9AE5E;
+  --color-urlaub-soft: #3B3018;
+  --color-krank: #D98066;
+  --color-krank-soft: #3E241E;
+  --color-schule: #7FADCB;
+  --color-schule-soft: #1E2F3B;
+  --color-fest: #BE96CC;
+  --color-fest-soft: #31223A;
 }
 
 @layer utilities {
@@ -52,8 +75,25 @@
     }
   }
 
+  /* handschriftlicher Haken im Kalender */
+  @keyframes ink-in {
+    from {
+      stroke-dashoffset: 26;
+      opacity: 0;
+    }
+    to {
+      stroke-dashoffset: 0;
+      opacity: 1;
+    }
+  }
+
   .animate-pop-in {
     animation: pop-in 0.4s ease forwards;
+  }
+
+  .ink-check path {
+    stroke-dasharray: 26;
+    animation: ink-in .5s ease forwards;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -61,6 +101,12 @@
       animation: none;
       opacity: 1;
       transform: none;
+    }
+
+    .ink-check path {
+      animation: none;
+      stroke-dashoffset: 0;
+      opacity: 1;
     }
   }
 }

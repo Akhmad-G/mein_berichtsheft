@@ -14,8 +14,8 @@
   {{-- Theme vor dem ersten Paint setzen: kein Aufblitzen der falschen Farbe --}}
   <script>
     (function () {
-      var g = localStorage.getItem('theme');
-      var d = g === 'dark' || (!g && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      let g = localStorage.getItem('theme');
+      let d = g === 'dark' || (!g && window.matchMedia('(prefers-color-scheme: dark)').matches);
       document.documentElement.classList.toggle('dark', d);
       document.documentElement.style.colorScheme = d ? 'dark' : 'light';
     })();
@@ -27,5 +27,15 @@
   <main class="max-w-5xl mx-auto px-4 sm:px-8 py-9 sm:py-12">
     {{ $slot }}
   </main>
+
+  <script>
+    document.querySelectorAll('[data-theme-toggle]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var d = document.documentElement.classList.toggle('dark');
+        document.documentElement.style.colorScheme = d ? 'dark' : 'light';
+        localStorage.setItem('theme', d ? 'dark' : 'light');
+      });
+    });
+  </script>
 </body>
 </html>

@@ -1,4 +1,3 @@
-{{-- gleicher Schalter wie auf der Startseite --}}
 <button type="button"
         data-theme-toggle
         aria-label="Theme wechseln"
