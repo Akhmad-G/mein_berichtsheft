@@ -1,6 +1,6 @@
 @props(['title' => null])
 
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de"
       class="scroll-smooth"
 >
@@ -24,10 +24,10 @@
 </head>
 <body class="font-sans bg-paper-raised text-ink antialiased min-h-screen">
 
-  <x-app.topbar :context="\$context ?? null" />
+  <x-app.topbar :context="$context ?? null" />
 
   <main class="max-w-[1280px] mx-auto px-5 pt-[22px] pb-15 flex flex-col">
-    {{ \$slot }}
+    {{ $slot }}
   </main>
 </body>
 </html>

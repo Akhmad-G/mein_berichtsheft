@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder {
         'ausbildungsbetrieb' => 'artif GmbH & Co. KG',
         'abteilung' => 'Backend',
         'ausbildungsbeginn' => '2026-09-01 00:00:00',
-        'gitlab_path' => "gazimagomedov-akhmed-2",
+        'gitlab_path' => "gazimagomedov-akhmed-3",
         'ausbilder_id' => $ausbilder->id,
       ]);
 

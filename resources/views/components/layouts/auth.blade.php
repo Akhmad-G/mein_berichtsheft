@@ -27,15 +27,5 @@
   <main class="max-w-5xl mx-auto px-4 sm:px-8 py-9 sm:py-12">
     {{ $slot }}
   </main>
-
-  <script>
-    document.querySelectorAll('[data-theme-toggle]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        var d = document.documentElement.classList.toggle('dark');
-        document.documentElement.style.colorScheme = d ? 'dark' : 'light';
-        localStorage.setItem('theme', d ? 'dark' : 'light');
-      });
-    });
-  </script>
 </body>
 </html>

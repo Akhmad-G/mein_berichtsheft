@@ -33,7 +33,7 @@
       />
 
       <form method="POST"
-            action="{{ route('tagesbericht.speichern', $tag) }}"
+            action="{{ route('tagesbericht.speichern', ['datum' => $tag->datum->toDateString()]) }}"
             class="px-[22px] py-5 flex flex-col gap-4 flex-1"
       >
         @csrf
@@ -52,16 +52,19 @@
                     name="taetigkeiten"
                     rows="8"
                     maxlength="600"
-                    @readonly(! $darfSchreiben)placeholder="Ein Satz je Tätigkeit. Stichpunkte genügen."
+                    @readonly(! $darfSchreiben)
+                    placeholder="Ein Satz je Tätigkeit. Stichpunkte genügen."
                     class="w-full bg-paper-line border border-rule rounded-md px-3 py-2.5 text-[14.5px]
                                leading-relaxed resize-y focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink
                                read-only:text-ink-soft"
           >{{ old('taetigkeiten', $tag->taetigkeiten) }}</textarea>
 
           <div class="flex justify-between gap-3 text-[12px] text-ink-soft">
-                        <span>{{ $darfSchreiben
-                            ? 'Der Ausbilder liest den Wortlaut genau so.'
-                            : 'Ansicht für Ausbilder — Einträge sind nicht bearbeitbar.' }}</span> <span>{{ mb_strlen($tag->taetigkeiten ?? '') }} / 600</span>
+            <span>{{ $darfSchreiben
+                ? 'Der Ausbilder liest den Wortlaut genau so.'
+                : 'Ansicht für Ausbilder — Einträge sind nicht bearbeitbar.' }}
+            </span>
+            <span>{{ mb_strlen($tag->taetigkeiten ?? '') }} / 600</span>
           </div>
         </div>
 
@@ -95,15 +98,16 @@
 
           <p class="text-[12px] leading-snug text-ink-soft">
             Zugeordnete Schritte erscheinen später im Wochenbericht — eine eigene Planseite brauchst du dafür
-            nicht. </p>
+            nicht.
+          </p>
         </div>
 
         <div class="mt-auto border-t border-rule pt-[15px] flex flex-wrap items-center justify-between gap-3.5">
-                    <span class="text-[12px] text-ink-soft">
-                        @if ($tag->updated_at)
-                        Zuletzt gespeichert {{ $tag->updated_at->isoFormat('HH:mm') }}
-                      @endif
-                    </span>
+          <span class="text-[12px] text-ink-soft">
+              @if ($tag->updated_at)
+              Zuletzt gespeichert {{ $tag->updated_at->isoFormat('HH:mm') }}
+            @endif
+          </span>
 
           @if ($darfSchreiben)
             <div class="flex gap-[9px]">

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KalenderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TagesberichtController;
 use App\Http\Controllers\WochenberichtController;
@@ -11,7 +11,10 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-  Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+  Route::get('/kalender', [KalenderController::class, 'index'])->name('kalender');
+
+  Route::get('/tagesbericht', [KalenderController::class, 'index'])->name('tagesbericht');
+  Route::put('/tagesbericht/{datum}', [KalenderController::class, 'update'])->name('tagesbericht.speichern');
 });
 
 Route::middleware('auth')->group(function () {
