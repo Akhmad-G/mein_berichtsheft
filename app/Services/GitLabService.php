@@ -49,6 +49,17 @@ class GitLabService implements GitLabServiceInterface {
     }
   }
 
+  public function pathExists(string $path): bool {
+    $response = Http::withHeaders(['PRIVATE-TOKEN' => $this->token,])
+      ->get("{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/tree", [
+        'path' => $path,
+        'ref' => $this->branch,
+        'per_page' => 1,
+      ]);
+
+    return $response->successful();
+  }
+
   public function getReportsForWeek(User $user, Carbon $weekStart): array {
     $weekEnd = $weekStart->copy()->endOfWeek();
 

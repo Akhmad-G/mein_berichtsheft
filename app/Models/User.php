@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Contracts\GitLabServiceInterface;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -36,7 +37,7 @@ class User extends Authenticatable {
       'role' => UserRole::class,];
   }
 
-  public function assignGitlabPathIfMissing(): void {
+  public function assignGitLabPath(GitLabServiceInterface $gitLabService): void {
     if (!$this->isAzubi()) {
       return;
     }
@@ -49,16 +50,33 @@ class User extends Authenticatable {
       return;
     }
 
-    $slug = Str::slug($this->fullNameReversed(), '-', 'de');
-    $this->gitlab_path = "{$slug}-{$this->id}";
+    $basePath = Str::slug($this->nameReversed(), '-', 'de');
+    $path = $basePath;
+    $counter = 2;
+
+    while (!$this->isGitLabPathAvailable($path, $gitLabService)) {
+      $path = "{$basePath}-{$counter}";
+      $counter++;
+    }
+
+    $this->gitlab_path = $path;
     $this->saveQuietly();
+  }
+
+  private function isGitLabPathAvailable(string $path, GitLabServiceInterface $gitLabService): bool {
+    $existsInDatabase = static::query()
+      ->whereKeyNot($this->getKey())
+      ->where('gitlab_path', $path)
+      ->exists();
+
+    return !$existsInDatabase && !$gitLabService->pathExists($path);
   }
 
   protected function name(): Attribute {
     return Attribute::make(get: fn() => trim("{$this->vorname} {$this->nachname}"));
   }
 
-  public function fullNameReversed(): string {
+  public function nameReversed(): string {
     return trim("{$this->nachname} {$this->vorname}");
   }
 

@@ -12,13 +12,9 @@ class FakeGitLabService implements GitLabServiceInterface {
     $path = "fake-gitlab/{$user->gitlab_path}/{$filename}";
 
     Storage::put($path, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-
-
-    //    Log::info('[FakeGitLabService] Skipped real GitLab commit', [
-    //      'user_id' => $user->id,
-    //      'gitlab_path' => $user->gitlab_path,
-    //      'filename' => $filename,
-    //    ]);
+  }
+  public function pathExists(string $path): bool {
+    return Storage::directoryExists("fake-gitlab/{$path}");
   }
 
   public function getReportsForWeek(User $user, \Carbon\Carbon $weekStart): array {
