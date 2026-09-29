@@ -11,9 +11,9 @@
                           tight
       >
         <x-slot:actions>
-          <x-heft.stepper :prev="route('wochenberichte', ['jahr' => $jahr - 1])"
-                          :next="route('wochenberichte', ['jahr' => $jahr + 1])"
-                          :jump="route('wochenberichte')"
+          <x-heft.stepper :prev="route('wochenberichte.index', ['jahr' => $jahr - 1])"
+                          :next="route('wochenberichte.index', ['jahr' => $jahr + 1])"
+                          :jump="route('wochenberichte.index')"
                           jump-label="Aktuelle KW"
           />
         </x-slot:actions>
@@ -21,7 +21,7 @@
 
       <div class="px-5 py-[11px] border-b border-rule flex flex-wrap gap-1.5">
         @foreach (['alle' => 'Alle', 'offen' => 'Offen', 'signiert' => 'Signiert'] as $key => $label)
-          <x-heft.filter-chip :href="route('wochenberichte', ['filter' => $key])"
+          <x-heft.filter-chip :href="route('wochenberichte.index', ['filter' => $key])"
                               :active="$filter === $key"
           >{{ $label }}</x-heft.filter-chip>
         @endforeach
@@ -29,18 +29,18 @@
 
       <div class="flex-1">
         @foreach ($wochen as $w)
-          <x-heft.ledger-row :href="route('wochenbericht', $w)"
-                             :active="$woche->is($w)"
+          <x-heft.ledger-row :href="$w->path ? route('wochenberichte.show', ['path' => $w->path]) : null"
+                             :active="$woche->path === $w->path"
           >
-                        <span class="flex flex-col items-start gap-0.5 w-[52px] shrink-0">
-                            <span class="font-display text-[16px]">{{ $w->kw }}</span>
-                            <span class="text-[10.5px] tracking-[.06em] uppercase text-ink-soft">KW</span>
-                        </span>
+            <span class="flex flex-col items-start gap-0.5 w-[52px] shrink-0">
+                <span class="font-display text-[16px]">{{ $w->kw }}</span>
+                <span class="text-[10.5px] tracking-[.06em] uppercase text-ink-soft">KW</span>
+            </span>
 
             <span class="flex-1 min-w-0 flex flex-col items-start gap-[5px]">
-                            <span class="text-[13.5px]">{{ $w->zeitraum }}</span>
-                            <x-heft.day-dots :filled="$w->erfassteTage" />
-                        </span>
+                <span class="text-[13.5px]">{{ $w->zeitraum }}</span>
+                <x-heft.day-dots :filled="$w->erfassteTage" />
+            </span>
 
             <x-stamp :status="$w->statusStempel">{{ $w->statusText }}</x-stamp>
           </x-heft.ledger-row>
@@ -54,8 +54,8 @@
         <x-slot:lead>
                     <span class="text-[12.5px] text-ink-soft min-w-0 truncate">
                         {{ $woche->zeitraum }}
-                      @if (auth()->user()->istAusbilder())
-                        · {{ $woche->azubi->vollerName }}
+                      @if (auth()->user()->isAusbilder())
+                        · {{ $woche->azubi->name }}
                       @else
                         · {{ $woche->erfassteTage }} von 5 Tagen erfasst
                       @endif
@@ -63,17 +63,19 @@
         </x-slot:lead>
 
         <x-slot:actions>
-          <x-button variant="secondary"
-                    size="sm"
-                    :href="route('wochenbericht.drucken', $woche)"
-          >Drucken
-          </x-button>
-          <x-button variant="secondary"
-                    size="sm"
-                    :href="route('wochenbericht.pdf', $woche)"
-          >PDF
-          </x-button>
-          <x-wochenbericht.sign-button :woche="$woche" />
+{{--          <x-button variant="secondary"--}}
+{{--                    size="sm"--}}
+{{--                    :href="route('wochenbericht.drucken', $woche)"--}}
+{{--          >Drucken--}}
+{{--          </x-button>--}}
+          @if ($woche->path)
+            <x-button variant="secondary"
+                      size="sm"
+                      :href="route('wochenberichte.pdf', ['path' => $woche->path])"
+            >PDF
+            </x-button>
+            <x-wochenbericht.sign-button :woche="$woche" />
+          @endif
         </x-slot:actions>
       </x-heft.page-header>
 
@@ -82,7 +84,7 @@
           <div>
             <h2 class="font-display text-[20px]">Wochenbericht KW {{ $woche->kw }}</h2>
             <p class="mt-1.5 text-[12.5px] text-ink-soft">
-              {{ $woche->azubi->vollerName }} · {{ $woche->azubi->ausbildungsbetrieb }} · {{ $woche->azubi->abteilung }}
+              {{ $woche->azubi->name }} · {{ $woche->azubi->ausbildungsbetrieb }} · {{ $woche->azubi->abteilung }}
             </p>
           </div>
           <x-stamp :status="$woche->statusStempel"
@@ -117,11 +119,11 @@
 
         <div class="mt-auto grid grid-cols-1 sm:grid-cols-2 gap-[18px] border-t border-rule pt-[18px]">
           <x-wochenbericht.signatur rolle="Auszubildende"
-                                    :name="$woche->azubi->vollerName"
+                                    :name="$woche->azubi->name"
                                     :datum="$woche->eingereicht_am"
           />
           <x-wochenbericht.signatur rolle="Ausbilder"
-                                    :name="$woche->ausbilder?->vollerName"
+                                    :name="$woche->ausbilder?->name"
                                     :datum="$woche->unterschrieben_am"
           />
         </div>

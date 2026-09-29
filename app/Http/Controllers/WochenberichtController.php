@@ -8,20 +8,68 @@ use App\Support\GitLabPath;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class WochenberichtController extends Controller {
   protected array $wochentage = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
 
-  /**
-   * Display a listing of the resource.
-   */
-  public function index() {
-    //
+  public function index(Request $request, GitLabServiceInterface $gitLabService) {
+    $user = $request->user();
+    $jahr = (int) $request->query('jahr', today()->isoWeekYear);
+    $filter = $request->query('filter', 'alle');
+
+    $azubis = $user->isAusbilder()
+      ? $user->azubis()->whereNotNull('gitlab_path')->get()
+      : collect([$user]);
+
+    $wochen = $azubis
+      ->flatMap(function (User $owner) use ($gitLabService) {
+        return collect($gitLabService->listReports($owner))
+          ->where('type', 'wochenbericht')
+          ->map(fn(array $entry) => $this->makeWocheFromEntry($entry, $owner, $gitLabService));
+      })
+      ->filter()
+      ->sortByDesc(fn(object $woche) => $woche->week_start?->timestamp ?? 0)
+      ->values();
+
+    $wochen = $wochen
+      ->filter(fn(object $woche) => (int) ($woche->jahr ?? today()->year) === $jahr)
+      // $hasSignature = !empty($report['unterschriften']['ausbilder']);
+      ->when($filter === 'offen', fn(Collection $items) => $items->reject(fn(object $woche) => $woche->istUnterschrieben))
+      ->when($filter === 'signiert', fn(Collection $items) => $items->filter(fn(object $woche) => $woche->istUnterschrieben))
+      ->values();
+
+    $woche = $wochen->first();
+
+    if (!$woche) {
+      $weekStart = today()->setISODate($jahr, today()->isoWeek())->startOfWeek();
+
+      $woche = $this->emptyWoche($user->isAusbilder() ? $azubis->first() ?? $user : $user, $weekStart);
+      $wochen = collect([$woche]);
+    }
+
+    $offen = $wochen->reject(fn(object $woche) => $woche->istUnterschrieben)->count();
+    $signiert = $wochen->filter(fn(object $woche) => $woche->istUnterschrieben)->count();
+
+    $tabs = $user->isAusbilder()
+      ? [
+        ['key' => 'wochen', 'label' => 'Wochenberichte', 'href' => route('wochenberichte.index'), 'badge' => $offen . ' offen'],
+        ['key' => 'azubis', 'label' => 'Meine Azubis', 'href' => '#', 'badge' => $azubis->count()],
+      ]
+      : [
+        ['key' => 'kalender', 'label' => 'Kalender', 'href' => route('kalender'), 'badge' => null],
+        ['key' => 'wochen', 'label' => 'Wochenberichte', 'href' => route('wochenberichte.index'), 'badge' => $signiert . ' signiert'],
+      ];
+
+    return view('wochenberichte.index', [
+      'tabs' => $tabs,
+      'wochen' => $wochen,
+      'woche' => $woche,
+      'filter' => $filter,
+      'jahr' => $jahr,
+    ]);
   }
 
-  /**
-   * Show the form for creating a new resource.
-   */
   public function create() {
     if (!auth()->user()->isAzubi()) {
       abort(403, 'Nur Azubis dürfen Wochenberichte erstellen.');
@@ -167,6 +215,137 @@ class WochenberichtController extends Controller {
     $gitLabService->deleteReport($reportOwner, $realPath);
 
     return redirect()->route('dashboard')->with('success', 'Wochenbericht gelöscht.');
+  }
+
+  private function makeWocheFromEntry(array $entry, User $owner, GitLabServiceInterface $gitLabService): ?object {
+    $path = $entry['path'] ?? null;
+
+    if (!$path) {
+      return null;
+    }
+
+    $report = $gitLabService->getReport($owner, $path);
+
+    return $this->makeWocheFromReport($report, $owner, $path);
+  }
+
+  private function makeWocheFromReport(array $report, User $owner, string $path): object {
+    $weekStart = isset($report['week_start'])
+      ? Carbon::parse($report['week_start'])->startOfDay()
+      : $this->weekStartFromFilename(basename($path));
+
+    $weekEnd = isset($report['week_end'])
+      ? Carbon::parse($report['week_end'])->startOfDay()
+      : $weekStart->copy()->addDays(4);
+
+    $azubiSignedAt = data_get($report, 'unterschriften.azubi.signed_at');
+    $ausbilderSignedAt = data_get($report, 'unterschriften.ausbilder.signed_at');
+
+    $eingereichtAm = $azubiSignedAt ? $this->parseSignatureDate($azubiSignedAt) : null;
+    $unterschriebenAm = $ausbilderSignedAt ? $this->parseSignatureDate($ausbilderSignedAt) : null;
+
+    $tage = collect($this->wochentage)->map(function (string $tag, int $index) use ($report, $weekStart) {
+      $data = $report['tage'][$tag] ?? [];
+      $datum = isset($data['date'])
+        ? Carbon::parse($data['date'])
+        : $weekStart->copy()->addDays($index);
+
+      return (object) [
+        'datum' => $datum,
+        'taetigkeiten' => $data['taetigkeiten'] ?? '',
+        'dauer' => $data['dauer'] ?? '',
+        'abteilung' => $data['abteilung'] ?? '',
+        'lernschritte' => collect(),
+      ];
+    });
+
+    $erfassteTage = $tage->filter(fn(object $tag) => filled($tag->taetigkeiten))->count();
+    $istUnterschrieben = $unterschriebenAm !== null;
+    $istEingereicht = $eingereichtAm !== null;
+
+    return (object) [
+      'id' => GitLabPath::encode($path),
+      'path' => GitLabPath::encode($path),
+      'realPath' => $path,
+      'kw' => $weekStart->isoWeek(),
+      'jahr' => $weekStart->isoWeekYear(),
+      'week_start' => $weekStart,
+      'week_end' => $weekEnd,
+      'zeitraum' => $weekStart->format('d.m.') . '–' . $weekEnd->format('d.m.Y'),
+      'erfassteTage' => $erfassteTage,
+      'statusStempel' => $istUnterschrieben ? 'signiert' : ($istEingereicht ? 'wartet' : 'offen'),
+      'statusText' => $istUnterschrieben ? 'Signiert' : ($istEingereicht ? 'Wartet' : 'Offen'),
+      'istUnterschrieben' => $istUnterschrieben,
+      'kannEinreichen' => !$istEingereicht && $erfassteTage > 0,
+      'eingereicht_am' => $eingereichtAm,
+      'unterschrieben_am' => $unterschriebenAm,
+      'tage' => $tage,
+      'azubi' => $owner,
+      'ausbilder' => $owner->ausbilder,
+    ];
+  }
+
+  private function emptyWoche(User $owner, Carbon $weekStart): object {
+    $weekEnd = $weekStart->copy()->addDays(4);
+
+    return (object) [
+      'id' => null,
+      'path' => null,
+      'realPath' => null,
+      'kw' => $weekStart->isoWeek(),
+      'jahr' => $weekStart->isoWeekYear(),
+      'week_start' => $weekStart,
+      'week_end' => $weekEnd,
+      'zeitraum' => $weekStart->format('d.m.') . '–' . $weekEnd->format('d.m.Y'),
+      'erfassteTage' => 0,
+      'statusStempel' => 'offen',
+      'statusText' => 'Offen',
+      'istUnterschrieben' => false,
+      'kannEinreichen' => false,
+      'eingereicht_am' => null,
+      'unterschrieben_am' => null,
+      'tage' => collect($this->wochentage)->map(fn(string $tag, int $index) => (object) [
+        'datum' => $weekStart->copy()->addDays($index),
+        'taetigkeiten' => '',
+        'dauer' => '',
+        'abteilung' => '',
+        'lernschritte' => collect(),
+      ]),
+      'azubi' => $owner,
+      'ausbilder' => $owner->ausbilder,
+    ];
+  }
+
+  private function weekStartFromFilename(string $filename): Carbon {
+    if (preg_match('/(?<year>\d{4})-KW(?<week>\d{1,2})/', $filename, $matches)) {
+      return Carbon::now()
+        ->setISODate((int) $matches['year'], (int) $matches['week'])
+        ->startOfWeek();
+    }
+
+    if (preg_match('/KW(?<week>\d{1,2}).*?(?<year>\d{4})/', $filename, $matches)) {
+      return Carbon::now()
+        ->setISODate((int) $matches['year'], (int) $matches['week'])
+        ->startOfWeek();
+    }
+
+    return today()->startOfWeek();
+  }
+
+  private function parseSignatureDate(string $value): ?Carbon {
+    foreach (['d.m.Y H:i', 'd.m.Y', Carbon::ATOM] as $format) {
+      try {
+        return Carbon::createFromFormat($format, $value);
+      } catch (\Throwable) {
+        //
+      }
+    }
+
+    try {
+      return Carbon::parse($value);
+    } catch (\Throwable) {
+      return null;
+    }
   }
 
   private function parseWeekStart(mixed $week) {
