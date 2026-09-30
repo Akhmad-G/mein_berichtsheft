@@ -116,29 +116,29 @@
       </tr>
     </thead>
     <tbody>
-      @foreach (['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'] as $tag)
-        @if (! empty($report['tage'][$tag]))
+      @foreach (['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'] as $day)
+        @if (! empty($report['days'][$day]))
           <tr>
             <td>
-              <strong>{{ $tag }}</strong><br> <span class="muted">{{ $report['tage'][$tag]['date'] ?? '' }}</span>
+              <strong>{{ $day }}</strong><br> <span class="muted">{{ $report['days'][$day]['date'] ?? '' }}</span>
             </td>
             <td class="whitespace">
-              @if (! empty($report['tage'][$tag]['taetigkeiten']))
-                {{ $report['tage'][$tag]['taetigkeiten'] }}
+              @if (! empty($report['days'][$day]['taetigkeiten']))
+                {{ $report['days'][$day]['taetigkeiten'] }}
               @endif
 
-              @if (! empty($report['tage'][$tag]['gelernt']))
-                {{ "\n\n" }}{{ $report['tage'][$tag]['gelernt'] }}
+              @if (! empty($report['days'][$day]['gelernt']))
+                {{ "\n\n" }}{{ $report['days'][$day]['gelernt'] }}
               @endif
 
-              @if (! empty($report['tage'][$tag]['probleme']))
-                {{ "\n\nBesondere Ereignisse / Probleme:\n" }}{{ $report['tage'][$tag]['probleme'] }}
+              @if (! empty($report['days'][$day]['probleme']))
+                {{ "\n\nBesondere Ereignisse / Probleme:\n" }}{{ $report['days'][$day]['probleme'] }}
               @endif
 
               @if (
-                empty($report['tage'][$tag]['taetigkeiten'])
-                && empty($report['tage'][$tag]['gelernt'])
-                && empty($report['tage'][$tag]['probleme'])
+                empty($report['days'][$day]['taetigkeiten'])
+                && empty($report['days'][$day]['gelernt'])
+                && empty($report['days'][$day]['probleme'])
               )
                 —
               @endif

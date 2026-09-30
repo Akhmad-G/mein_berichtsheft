@@ -1,4 +1,4 @@
-@props(['woche'])
+@props(['week'])
 
 @php $user = auth()->user(); @endphp
 

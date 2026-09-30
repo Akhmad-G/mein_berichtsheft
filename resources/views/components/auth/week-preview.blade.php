@@ -6,9 +6,9 @@
     <span class="text-[12.5px] text-ink-soft">{{ $range }}</span>
   </div>
 
-  @foreach (['Mo', 'Di', 'Mi', 'Do', 'Fr'] as $i => $tag)
+  @foreach (['Mo', 'Di', 'Mi', 'Do', 'Fr'] as $i => $day)
     <div class="flex items-center gap-3 py-1.5 border-t border-rule">
-      <span class="w-[26px] text-[13px] text-ink-soft shrink-0">{{ $tag }}</span>
+      <span class="w-[26px] text-[13px] text-ink-soft shrink-0">{{ $day }}</span>
       <span class="flex-1 h-px bg-rule"></span>
 
       @if ($i < $filled)

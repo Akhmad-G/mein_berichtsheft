@@ -7,7 +7,7 @@
 ])>
     <input
         type="checkbox"
-        name="lernschritte[]"
+        name="learningSteps[]"
         value="{{ $schritt->id }}"
         @checked($checked)
         @disabled($disabled)

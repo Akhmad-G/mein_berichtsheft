@@ -6,7 +6,7 @@ use App\Contracts\GitLabServiceInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
-class KalenderController extends Controller {
+class CalendarController extends Controller {
   public function index(Request $request, GitLabServiceInterface $gitLabService) {
     $user = $request->user();
 
@@ -14,8 +14,8 @@ class KalenderController extends Controller {
       abort(403, 'Nur Azubis dürfen den Kalender sehen.');
     }
 
-    $monat = Carbon::parse($request->query('monat', today()->format('Y-m')))->startOfMonth();
-    $selectedDate = Carbon::parse($request->query('datum', today()->toDateString()));
+    $month = Carbon::parse($request->query('month', today()->format('Y-m')))->startOfMonth();
+    $selectedDate = Carbon::parse($request->query('date', today()->toDateString()));
     $selectedFilename = $selectedDate->toDateString() . ' Tagesbericht.json';
 
     $reports = collect($gitLabService->listReports($user))
@@ -45,82 +45,53 @@ class KalenderController extends Controller {
       ],
     ];
 
-    $start = $monat->copy()->startOfMonth()->startOfWeek();
-    $tage = collect(range(0, 34))->map(function (int $offset) use ($start, $monat, $reportByName) {
-      $datum = $start->copy()->addDays($offset);
-      $filename = $datum->toDateString() . ' Tagesbericht.json';
+    $start = $month->copy()->startOfMonth()->startOfWeek();
+    $days = collect(range(0, 34))->map(function (int $offset) use ($start, $month, $reportByName) {
+      $date = $start->copy()->addDays($offset);
+      $filename = $date->toDateString() . ' Tagesbericht.json';
 
       return [
-        'datum' => $datum,
-        'art' => $reportByName->has($filename) ? 'bericht' : ($datum->isWeekend() ? 'frei' : 'offen'),
-        'imMonat' => $datum->isSameMonth($monat),
+        'date' => $date,
+        'art' => $reportByName->has($filename) ? 'bericht' : ($date->isWeekend() ? 'frei' : 'offen'),
+        'imMonat' => $date->isSameMonth($month),
       ];
     });
 
     $weekStart = $selectedDate->copy()->startOfWeek();
-    $wochentage = collect(range(0, 4))->map(function (int $offset) use ($reportByName, $weekStart) {
-      $datum = $weekStart->copy()->addDays($offset);
-      $filename = $datum->toDateString() . ' Tagesbericht.json';
+    $weekdays = collect(range(0, 4))->map(function (int $offset) use ($reportByName, $weekStart) {
+      $date = $weekStart->copy()->addDays($offset);
+      $filename = $date->toDateString() . ' Tagesbericht.json';
 
       return [
-        'datum' => $datum,
+        'date' => $date,
         'art' => $reportByName->has($filename) ? 'bericht' : 'offen',
       ];
     });
 
-    $tag = (object) [
-      'datum' => $selectedDate,
+    $day = (object) [
+      'date' => $selectedDate,
       'taetigkeiten' => $data['taetigkeiten'] ?? '',
       'dauer' => $data['dauer'] ?? '',
       'abteilung' => $data['abteilung'] ?? '',
       'statusStempel' => $selectedReport ? 'bericht' : 'offen',
       'statusText' => $selectedReport ? 'Erfasst' : 'Offen',
       'updated_at' => null,
-      'lernschritte' => collect(),
+      'learningSteps' => collect(),
     ];
 
     return view('kalender.index', [
       'tabs' => $tabs,
-      'monat' => $monat,
-      'tage' => $tage,
-      'tag' => $tag,
-      'wochentage' => $wochentage,
-      'wocheErfasst' => $wochentage->where('art', 'bericht')->count(),
-      'lernschritte' => collect(),
-      'darfSchreiben' => true,
+      'month' => $month,
+      'days' => $days,
+      'day' => $day,
+      'weekdays' => $weekdays,
+      'recordedWeekdays' => $weekdays->where('art', 'bericht')->count(),
+      'learningSteps' => collect(),
+      'canWrite' => true,
     ]);
   }
 
-  /**
-   * Show the form for creating a new resource.
-   */
-  public function create() {
-    //
-  }
-
-  /**
-   * Store a newly created resource in storage.
-   */
-  public function store(Request $request) {
-    //
-  }
-
-  /**
-   * Display the specified resource.
-   */
-  public function show(string $id) {
-    //
-  }
-
-  /**
-   * Show the form for editing the specified resource.
-   */
-  public function edit(string $id) {
-    //
-  }
-
-
-  public function update(Request $request, string $datum, GitLabServiceInterface $gitLabService) {
+  public function update(Request $request, string $date, GitLabServiceInterface $gitLabService) {
     $user = $request->user();
 
     if (!$user->isAzubi()) {
@@ -133,12 +104,12 @@ class KalenderController extends Controller {
       'abteilung' => ['nullable', 'string', 'max:255'],
     ]);
 
-    $datum = Carbon::parse($datum);
-    $filename = $datum->toDateString() . ' Tagesbericht.json';
+    $date = Carbon::parse($date);
+    $filename = $date->toDateString() . ' Tagesbericht.json';
 
     $payload = [
-      'date' => $datum->toDateString(),
-      'wochentag' => $datum->translatedFormat('l'),
+      'datum' => $date->toDateString(),
+      'wochentag' => $date->translatedFormat('l'),
       'taetigkeiten' => $data['taetigkeiten'],
       'dauer' => $data['dauer'] ?? null,
       'abteilung' => $data['abteilung'] ?? null,
@@ -155,14 +126,7 @@ class KalenderController extends Controller {
     );
 
     return redirect()->route('tagesbericht', [
-      'datum' => $datum->toDateString(),
+      'date' => $date->toDateString(),
     ]);
-  }
-
-  /**
-   * Remove the specified resource from storage.
-   */
-  public function destroy(string $id) {
-    //
   }
 }

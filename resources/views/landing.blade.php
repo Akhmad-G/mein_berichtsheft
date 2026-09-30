@@ -143,9 +143,9 @@
         <span class="font-display text-[17px]">KW 36</span> <span class="text-[13px] text-ink-soft">09.–13. Juni</span>
       </div>
 
-      @foreach (['Mo','Di','Mi','Do','Fr'] as $i => $tag)
+      @foreach (['Mo','Di','Mi','Do','Fr'] as $i => $day)
         <div class="flex items-center gap-3 py-2 border-t border-rule">
-          <span class="w-8 text-[13.5px] text-ink-soft shrink-0">{{ $tag }}</span>
+          <span class="w-8 text-[13.5px] text-ink-soft shrink-0">{{ $day }}</span>
           <span class="flex-1 h-px bg-rule"></span>
           <span class="w-[18px] h-[18px] rounded-full bg-signed-soft flex items-center justify-center shrink-0 animate-pop-in"
                 style="animation-delay: {{ $i * 150 }}ms"

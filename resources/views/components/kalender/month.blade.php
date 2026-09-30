@@ -10,7 +10,7 @@
       'offen'    => 'bg-transparent',
       'frei'     => 'bg-transparent',
   ];
-  $tag = [
+  $day = [
       'urlaub' => 'Urlaub', 'krank' => 'Krank',
       'schule' => 'Schule', 'feiertag' => 'Feiertag',
   ];
@@ -28,7 +28,7 @@
       @php
         $art = $day['art'];
         $in  = $day['imMonat'];
-        $d   = $day['datum'];
+        $d   = $day['date'];
         $isSelected = $in && $selected && $d->isSameDay($selected);
         $isToday    = $in && $today && $d->isSameDay($today);
       @endphp
@@ -53,8 +53,8 @@
                   @endif
                 </span>
 
-        @if ($in && isset($tag[$art]))
-          <span class="text-[10.5px] text-ink-soft truncate">{{ $tag[$art] }}</span>
+        @if ($in && isset($day[$art]))
+          <span class="text-[10.5px] text-ink-soft truncate">{{ $day[$art] }}</span>
         @endif
       </a>
     @endforeach

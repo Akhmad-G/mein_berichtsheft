@@ -11,213 +11,65 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 class WochenberichtController extends Controller {
-  protected array $wochentage = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
+  protected array $weekdays = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
 
   public function index(Request $request, GitLabServiceInterface $gitLabService) {
     $user = $request->user();
-    $jahr = (int) $request->query('jahr', today()->isoWeekYear);
+    $year = (int) $request->query('year', today()->isoWeekYear);
     $filter = $request->query('filter', 'alle');
 
     $azubis = $user->isAusbilder()
       ? $user->azubis()->whereNotNull('gitlab_path')->get()
       : collect([$user]);
 
-    $wochen = $azubis
+    $weeks = $azubis
       ->flatMap(function (User $owner) use ($gitLabService) {
         return collect($gitLabService->listReports($owner))
           ->where('type', 'wochenbericht')
-          ->map(fn(array $entry) => $this->makeWocheFromEntry($entry, $owner, $gitLabService));
+          ->map(fn(array $entry) => $this->makeWeekFromEntry($entry, $owner, $gitLabService));
       })
       ->filter()
-      ->sortByDesc(fn(object $woche) => $woche->week_start?->timestamp ?? 0)
+      ->sortByDesc(fn(object $week) => $week->week_start?->timestamp ?? 0)
       ->values();
 
-    $wochen = $wochen
-      ->filter(fn(object $woche) => (int) ($woche->jahr ?? today()->year) === $jahr)
-      // $hasSignature = !empty($report['unterschriften']['ausbilder']);
-      ->when($filter === 'offen', fn(Collection $items) => $items->reject(fn(object $woche) => $woche->istUnterschrieben))
-      ->when($filter === 'signiert', fn(Collection $items) => $items->filter(fn(object $woche) => $woche->istUnterschrieben))
+    $weeks = $weeks
+      ->filter(fn(object $week) => (int) ($week->year ?? today()->year) === $year)
+      ->when($filter === 'offen', fn(Collection $items) => $items->reject(fn(object $week) => $week->isSigned))
+      ->when($filter === 'signiert', fn(Collection $items) => $items->filter(fn(object $week) => $week->isSigned))
       ->values();
 
-    $woche = $wochen->first();
+    $week = $weeks->first();
 
-    if (!$woche) {
-      $weekStart = today()->setISODate($jahr, today()->isoWeek())->startOfWeek();
+    if (!$week) {
+      $weekStart = today()->setISODate($year, today()->isoWeek())->startOfWeek();
 
-      $woche = $this->emptyWoche($user->isAusbilder() ? $azubis->first() ?? $user : $user, $weekStart);
-      $wochen = collect([$woche]);
+      $week = $this->emptyWeek($user->isAusbilder() ? $azubis->first() ?? $user : $user, $weekStart);
+      $weeks = collect([$week]);
     }
 
-    $offen = $wochen->reject(fn(object $woche) => $woche->istUnterschrieben)->count();
-    $signiert = $wochen->filter(fn(object $woche) => $woche->istUnterschrieben)->count();
+    $offen = $weeks->reject(fn(object $week) => $week->isSigned)->count();
+    $signiert = $weeks->filter(fn(object $week) => $week->isSigned)->count();
 
     $tabs = $user->isAusbilder()
       ? [
-        ['key' => 'wochen', 'label' => 'Wochenberichte', 'href' => route('wochenberichte.index'), 'badge' => $offen . ' offen'],
+        ['key' => 'weeks', 'label' => 'Wochenberichte', 'href' => route('wochenberichte.index'), 'badge' => $offen . ' offen'],
         ['key' => 'azubis', 'label' => 'Meine Azubis', 'href' => '#', 'badge' => $azubis->count()],
       ]
       : [
         ['key' => 'kalender', 'label' => 'Kalender', 'href' => route('kalender'), 'badge' => null],
-        ['key' => 'wochen', 'label' => 'Wochenberichte', 'href' => route('wochenberichte.index'), 'badge' => $signiert . ' signiert'],
+        ['key' => 'weeks', 'label' => 'Wochenberichte', 'href' => route('wochenberichte.index'), 'badge' => $signiert . ' signiert'],
       ];
 
     return view('wochenberichte.index', [
       'tabs' => $tabs,
-      'wochen' => $wochen,
-      'woche' => $woche,
+      'weeks' => $weeks,
+      'week' => $week,
       'filter' => $filter,
-      'jahr' => $jahr,
+      'year' => $year,
     ]);
   }
-
-  public function create() {
-    if (!auth()->user()->isAzubi()) {
-      abort(403, 'Nur Azubis dürfen Wochenberichte erstellen.');
-    }
-
-    return view('wochenberichte.create');
-  }
-
-  // AJAX: Wird über die Schaltfläche „Aus Tagesberichten übernehmen“ aufgerufen
-  public function uebernehmen(Request $request, GitLabServiceInterface $gitLabService) {
-    $request->validate(['week' => 'required|string']);
-
-    $weekStart = $this->parseWeekStart($request->query('week'));
-
-    $tagesberichte = $gitLabService->getReportsForWeek($request->user(), $weekStart);
-
-    $result = [];
-    foreach ($this->wochentage as $tag) {
-      $result[$tag] = ['taetigkeiten' => $tagesberichte[$tag]['taetigkeiten'] ?? '', 'gelernt' => $tagesberichte[$tag]['gelernt'] ?? '', 'probleme' => $tagesberichte[$tag]['probleme'] ?? '',];
-    }
-
-    return response()->json($result);
-  }
-
-  /**
-   * Store a newly created resource in storage.
-   */
-  public function store(Request $request, GitLabServiceInterface $gitLabService) {
-    if (!auth()->user()->isAzubi()) {
-      abort(403, 'Nur Azubis dürfen Wochenberichte erstellen.');
-    }
-
-    $validated = $request->validate(['week' => 'required|string', 'tage' => 'required|array', 'tage.*.taetigkeiten' => 'nullable|string', 'tage.*.gelernt' => 'nullable|string', 'tage.*.probleme' => 'nullable|string', 'tage.*.ausbildungsplan' => 'nullable|string',]);
-
-    $user = $request->user();
-    $weekStart = $this->parseWeekStart($validated['week']);
-    $weekEnd = $weekStart->copy()->addDays(4);
-
-    [$year, $weekNumber] = explode('-W', $validated['week']);
-
-    $tage = [];
-    foreach ($this->wochentage as $index => $tag) {
-      $date = $weekStart->copy()->addDays($index);
-      $tage[$tag] = ['date' => $date->format('Y-m-d'), 'taetigkeiten' => $validated['tage'][$tag]['taetigkeiten'] ?? '', 'gelernt' => $validated['tage'][$tag]['gelernt'] ?? '', 'probleme' => $validated['tage'][$tag]['probleme'] ?? '', 'ausbildungsplan' => $validated['tage'][$tag]['ausbildungsplan'] ?? '',];
-    }
-
-    $data = ['berichtsnummer' => $user->nextBerichtsnummer(), 'kalenderwoche' => "KW {$weekNumber} / {$year}", 'week_start' => $weekStart->format('Y-m-d'), 'week_end' => $weekEnd->format('Y-m-d'), 'user' => ['name' => $user->name, 'ausbildungsberuf' => $user->ausbildungsberuf, 'ausbildungsbetrieb' => $user->ausbildungsbetrieb,], 'tage' => $tage, 'unterschriften' => ['azubi' => null, 'ausbilder' => null,], 'created_at' => now()->toIso8601String(),];
-
-    $filename = sprintf('%s-KW%02d Wochenbericht.json', $year, (int) $weekNumber);
-
-    $gitLabService->saveReport($user, $filename, $data);
-
-    return redirect()->route('dashboard')->with('success', 'Wochenbericht gespeichert.');
-  }
-
-  /**
-   * Display the specified resource.
-   */
-  public function show(string $path, GitLabServiceInterface $gitLabService) {
-    $realPath = GitLabPath::decode($path);
-    $reportOwner = $this->authorizeReportPath($realPath);
-
-    $report = $gitLabService->getReport($reportOwner, $realPath);
-
-    $hasSignature = !empty($report['unterschriften']['ausbilder']);
-
-    $canManage = auth()->user()->isAzubi() && auth()->id() === $reportOwner->id && !$hasSignature;
-
-    return view('wochenberichte.show', ['report' => $report, 'path' => GitLabPath::encode($realPath), 'canManage' => $canManage,]);
-  }
-
-  /**
-   * Show the form for editing the specified resource.
-   */
-  public function edit(string $id, GitLabServiceInterface $gitLabService) {
-    $realPath = GitLabPath::decode($id);
-    $reportOwner = $this->authorizeReportPath($realPath);
-
-    $report = $gitLabService->getReport($reportOwner, $realPath);
-
-    $hasSignature = !empty($report['unterschriften']['ausbilder']);
-
-    if (!auth()->user()->isAzubi() || auth()->id() !== $reportOwner->id || $hasSignature) {
-      abort(403, 'Signierte Wochenberichte dürfen nicht bearbeitet werden.');
-    }
-
-
-    return view('wochenberichte.edit', ['report' => $report, 'path' => $id,]);
-  }
-
-  /**
-   * Update the specified resource in storage.
-   */
-  public function update(Request $request, string $id, GitLabServiceInterface $gitLabService) {
-    $realPath = GitLabPath::decode($id);
-    $reportOwner = $this->authorizeReportPath($realPath);
-
-    $existing = $gitLabService->getReport($reportOwner, $realPath);
-
-    $hasSignature = !empty($existing['unterschriften']['ausbilder']);
-
-    if (!auth()->user()->isAzubi() || auth()->id() !== $reportOwner->id || $hasSignature) {
-      abort(403, 'Signierte Wochenberichte dürfen nicht bearbeitet werden.');
-    }
-
-    $validated = $request->validate(['week' => 'required|string', 'tage' => 'required|array', 'tage.*.taetigkeiten' => 'nullable|string', 'tage.*.gelernt' => 'nullable|string', 'tage.*.probleme' => 'nullable|string', 'tage.*.ausbildungsplan' => 'nullable|string',]);
-
-
-    $weekStart = $this->parseWeekStart($validated['week']);
-    $weekEnd = $weekStart->copy()->addDays(4);
-
-    [$year, $weekNumber] = explode('-W', $validated['week']);
-
-    $tage = [];
-    foreach ($this->wochentage as $index => $tag) {
-      $date = $weekStart->copy()->addDays($index);
-
-      $tage[$tag] = ['date' => $date->format('Y-m-d'), 'taetigkeiten' => $validated['tage'][$tag]['taetigkeiten'] ?? '', 'gelernt' => $validated['tage'][$tag]['gelernt'] ?? '', 'probleme' => $validated['tage'][$tag]['probleme'] ?? '', 'ausbildungsplan' => $validated['tage'][$tag]['ausbildungsplan'] ?? '',];
-    }
-
-    $data = ['berichtsnummer' => $existing['berichtsnummer'] ?? null, 'kalenderwoche' => "KW {$weekNumber} / {$year}", 'week_start' => $weekStart->format('Y-m-d'), 'week_end' => $weekEnd->format('Y-m-d'), 'user' => $existing['user'] ?? ['name' => $reportOwner->name, 'ausbildungsberuf' => $reportOwner->ausbildungsberuf, 'ausbildungsbetrieb' => $reportOwner->ausbildungsbetrieb,], 'tage' => $tage, 'unterschriften' => $existing['unterschriften'] ?? ['azubi' => null, 'ausbilder' => null,], 'created_at' => $existing['created_at'] ?? now()->toIso8601String(), 'updated_at' => now()->toIso8601String(),];
-
-    $gitLabService->saveReport($reportOwner, basename($realPath), $data, 'update');
-
-    return redirect()->route('wochenberichte.show', ['path' => $id])->with('success', 'Wochenbericht aktualisiert.');
-  }
-
-  /**
-   * Remove the specified resource from storage.
-   */
-  public function destroy(string $id, GitLabServiceInterface $gitLabService) {
-    $realPath = GitLabPath::decode($id);
-    $reportOwner = $this->authorizeReportPath($realPath);
-
-    $report = $gitLabService->getReport($reportOwner, $realPath);
-
-    $hasSignature = !empty($report['unterschriften']['ausbilder']);
-
-    if (!auth()->user()->isAzubi() || auth()->id() !== $reportOwner->id || $hasSignature) {
-      abort(403, 'Signierte Wochenberichte dürfen nicht gelöscht werden.');
-    }
-
-    $gitLabService->deleteReport($reportOwner, $realPath);
-
-    return redirect()->route('dashboard')->with('success', 'Wochenbericht gelöscht.');
-  }
-
-  private function makeWocheFromEntry(array $entry, User $owner, GitLabServiceInterface $gitLabService): ?object {
+  
+  private function makeWeekFromEntry(array $entry, User $owner, GitLabServiceInterface $gitLabService): ?object {
     $path = $entry['path'] ?? null;
 
     if (!$path) {
@@ -226,10 +78,10 @@ class WochenberichtController extends Controller {
 
     $report = $gitLabService->getReport($owner, $path);
 
-    return $this->makeWocheFromReport($report, $owner, $path);
+    return $this->makeWeekFromReport($report, $owner, $path);
   }
 
-  private function makeWocheFromReport(array $report, User $owner, string $path): object {
+  private function makeWeekFromReport(array $report, User $owner, string $path): object {
     $weekStart = isset($report['week_start'])
       ? Carbon::parse($report['week_start'])->startOfDay()
       : $this->weekStartFromFilename(basename($path));
@@ -241,51 +93,51 @@ class WochenberichtController extends Controller {
     $azubiSignedAt = data_get($report, 'unterschriften.azubi.signed_at');
     $ausbilderSignedAt = data_get($report, 'unterschriften.ausbilder.signed_at');
 
-    $eingereichtAm = $azubiSignedAt ? $this->parseSignatureDate($azubiSignedAt) : null;
-    $unterschriebenAm = $ausbilderSignedAt ? $this->parseSignatureDate($ausbilderSignedAt) : null;
+    $submittedAt = $azubiSignedAt ? $this->parseSignatureDate($azubiSignedAt) : null;
+    $signedAt = $ausbilderSignedAt ? $this->parseSignatureDate($ausbilderSignedAt) : null;
 
-    $tage = collect($this->wochentage)->map(function (string $tag, int $index) use ($report, $weekStart) {
-      $data = $report['tage'][$tag] ?? [];
-      $datum = isset($data['date'])
-        ? Carbon::parse($data['date'])
+    $days = collect($this->weekdays)->map(function (string $day, int $index) use ($report, $weekStart) {
+      $data = $report['days'][$day] ?? [];
+      $date = isset($data['datum'])
+        ? Carbon::parse($data['datum'])
         : $weekStart->copy()->addDays($index);
 
       return (object) [
-        'datum' => $datum,
+        'date' => $date,
         'taetigkeiten' => $data['taetigkeiten'] ?? '',
         'dauer' => $data['dauer'] ?? '',
         'abteilung' => $data['abteilung'] ?? '',
-        'lernschritte' => collect(),
+        'learningSteps' => collect(),
       ];
     });
 
-    $erfassteTage = $tage->filter(fn(object $tag) => filled($tag->taetigkeiten))->count();
-    $istUnterschrieben = $unterschriebenAm !== null;
-    $istEingereicht = $eingereichtAm !== null;
+    $recordedDay = $days->filter(fn(object $day) => filled($day->taetigkeiten))->count();
+    $isSigned = $signedAt !== null;
+    $isSubmitted = $submittedAt !== null;
 
     return (object) [
       'id' => GitLabPath::encode($path),
       'path' => GitLabPath::encode($path),
       'realPath' => $path,
       'kw' => $weekStart->isoWeek(),
-      'jahr' => $weekStart->isoWeekYear(),
+      'year' => $weekStart->isoWeekYear(),
       'week_start' => $weekStart,
       'week_end' => $weekEnd,
-      'zeitraum' => $weekStart->format('d.m.') . '–' . $weekEnd->format('d.m.Y'),
-      'erfassteTage' => $erfassteTage,
-      'statusStempel' => $istUnterschrieben ? 'signiert' : ($istEingereicht ? 'wartet' : 'offen'),
-      'statusText' => $istUnterschrieben ? 'Signiert' : ($istEingereicht ? 'Wartet' : 'Offen'),
-      'istUnterschrieben' => $istUnterschrieben,
-      'kannEinreichen' => !$istEingereicht && $erfassteTage > 0,
-      'eingereicht_am' => $eingereichtAm,
-      'unterschrieben_am' => $unterschriebenAm,
-      'tage' => $tage,
+      'period' => $weekStart->format('d.m.') . '–' . $weekEnd->format('d.m.Y'),
+      'recordedDays' => $recordedDay,
+      'statusStamp' => $isSigned ? 'signiert' : ($isSubmitted ? 'wartet' : 'offen'),
+      'statusText' => $isSigned ? 'Signiert' : ($isSubmitted ? 'Wartet' : 'Offen'),
+      'isSigned' => $isSigned,
+      'kannEinreichen' => !$isSubmitted && $recordedDay > 0,
+      'eingereicht_am' => $submittedAt,
+      'unterschrieben_am' => $signedAt,
+      'days' => $days,
       'azubi' => $owner,
       'ausbilder' => $owner->ausbilder,
     ];
   }
 
-  private function emptyWoche(User $owner, Carbon $weekStart): object {
+  private function emptyWeek(User $owner, Carbon $weekStart): object {
     $weekEnd = $weekStart->copy()->addDays(4);
 
     return (object) [
@@ -293,18 +145,18 @@ class WochenberichtController extends Controller {
       'path' => null,
       'realPath' => null,
       'kw' => $weekStart->isoWeek(),
-      'jahr' => $weekStart->isoWeekYear(),
+      'year' => $weekStart->isoWeekYear(),
       'week_start' => $weekStart,
       'week_end' => $weekEnd,
-      'zeitraum' => $weekStart->format('d.m.') . '–' . $weekEnd->format('d.m.Y'),
-      'erfassteTage' => 0,
-      'statusStempel' => 'offen',
+      'period' => $weekStart->format('d.m.') . '–' . $weekEnd->format('d.m.Y'),
+      'recordedDays' => 0,
+      'statusStamp' => 'offen',
       'statusText' => 'Offen',
-      'istUnterschrieben' => false,
+      'isSigned' => false,
       'kannEinreichen' => false,
       'eingereicht_am' => null,
       'unterschrieben_am' => null,
-      'tage' => collect($this->wochentage)->map(fn(string $tag, int $index) => (object) [
+      'days' => collect($this->weekdays)->map(fn(string $day, int $index) => (object) [
         'datum' => $weekStart->copy()->addDays($index),
         'taetigkeiten' => '',
         'dauer' => '',
@@ -346,60 +198,6 @@ class WochenberichtController extends Controller {
     } catch (\Throwable) {
       return null;
     }
-  }
-
-  private function parseWeekStart(mixed $week) {
-    [$year, $weekNumber] = explode('-W', $week);
-
-    return Carbon::now()->setISODate((int) $year, (int) $weekNumber)->startOfWeek();
-  }
-
-  public function sign(Request $request, string $path, GitLabServiceInterface $gitLabService) {
-    $realPath = GitLabPath::decode($path);
-    $reportOwner = $this->authorizeReportPath($realPath);
-
-    $validated = $request->validate(['signature' => 'required|string|starts_with:data:image/png;base64,',]);
-
-    $user = $request->user();
-
-    if (!$user->isAzubi() && !$user->isAusbilder()) {
-      abort(403, 'Diese Rolle darf nicht unterschreiben.');
-    }
-
-    if ($user->isAzubi() && $user->id !== $reportOwner->id) {
-      abort(403, 'Azubis dürfen nur eigene Wochenberichte unterschreiben.');
-    }
-
-    if ($user->isAusbilder() && $reportOwner->ausbilder_id !== $user->id) {
-      abort(403, 'Ausbilder dürfen nur Wochenberichte eigener Azubis unterschreiben.');
-    }
-
-    $signatureKey = $user->isAusbilder() ? 'ausbilder' : 'azubi';
-
-    $existing = $gitLabService->getReport($reportOwner, $realPath);
-
-    $existing['unterschriften'] ??= ['azubi' => null, 'ausbilder' => null,];
-
-    $existing['unterschriften'][$signatureKey] = ['name' => $user->name, 'signed_at' => now()->format('d.m.Y H:i'), 'image' => $validated['signature'],];
-
-    $filename = basename($realPath);
-
-    $gitLabService->saveReport($reportOwner, $filename, $existing, 'update');
-
-    return response()->json(['success' => true]);
-  }
-
-  public function pdf(string $path, GitLabServiceInterface $gitLabService) {
-    $realPath = GitLabPath::decode($path);
-    $reportOwner = $this->authorizeReportPath($realPath);
-
-    $report = $gitLabService->getReport($reportOwner, $realPath);
-
-    $pdf = Pdf::loadView('wochenberichte.pdf', ['report' => $report, 'owner' => $reportOwner,])->setPaper('a4');
-
-    $filename = pathinfo(basename($realPath), PATHINFO_FILENAME) . '.pdf';
-
-    return $pdf->download($filename);
   }
 
   protected function authorizeReportPath(string $realPath): User {

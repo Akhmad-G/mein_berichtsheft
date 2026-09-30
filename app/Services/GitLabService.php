@@ -90,7 +90,7 @@ class GitLabService implements GitLabServiceInterface {
       }
 
       $data = json_decode($fileResponse->body(), true);
-      $weekday = Carbon::parse($data['date'])->translatedFormat('l'); // Montag, Dienstag, ...
+      $weekday = Carbon::parse($data['datum'])->translatedFormat('l'); // Montag, Dienstag, ...
 
       $reportsByWeekday[$weekday] = $data;
     }

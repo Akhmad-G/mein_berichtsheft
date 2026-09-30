@@ -1,6 +1,6 @@
 <x-layouts.app title="Wochenberichte">
 
-  <x-heft.tabs current="wochen"
+  <x-heft.tabs current="weeks"
                :items="$tabs"
   />
 
@@ -11,8 +11,8 @@
                           tight
       >
         <x-slot:actions>
-          <x-heft.stepper :prev="route('wochenberichte.index', ['jahr' => $jahr - 1])"
-                          :next="route('wochenberichte.index', ['jahr' => $jahr + 1])"
+          <x-heft.stepper :prev="route('wochenberichte.index', ['year' => $year - 1])"
+                          :next="route('wochenberichte.index', ['year' => $year + 1])"
                           :jump="route('wochenberichte.index')"
                           jump-label="Aktuelle KW"
           />
@@ -28,21 +28,21 @@
       </div>
 
       <div class="flex-1">
-        @foreach ($wochen as $w)
-          <x-heft.ledger-row :href="$w->path ? route('wochenberichte.show', ['path' => $w->path]) : null"
-                             :active="$woche->path === $w->path"
+        @foreach ($weeks as $listedWeek)
+          <x-heft.ledger-row :href="$listedWeek->path ? route('wochenberichte.show', ['path' => $listedWeek->path]) : null"
+                             :active="$week->path === $listedWeek->path"
           >
             <span class="flex flex-col items-start gap-0.5 w-[52px] shrink-0">
-                <span class="font-display text-[16px]">{{ $w->kw }}</span>
+                <span class="font-display text-[16px]">{{ $listedWeek->kw }}</span>
                 <span class="text-[10.5px] tracking-[.06em] uppercase text-ink-soft">KW</span>
             </span>
 
             <span class="flex-1 min-w-0 flex flex-col items-start gap-[5px]">
-                <span class="text-[13.5px]">{{ $w->zeitraum }}</span>
-                <x-heft.day-dots :filled="$w->erfassteTage" />
+                <span class="text-[13.5px]">{{ $listedWeek->period }}</span>
+                <x-heft.day-dots :filled="$listedWeek->recordedDays" />
             </span>
 
-            <x-stamp :status="$w->statusStempel">{{ $w->statusText }}</x-stamp>
+            <x-stamp :status="$listedWeek->statusStamp">{{ $listedWeek->statusText }}</x-stamp>
           </x-heft.ledger-row>
         @endforeach
       </div>
@@ -53,78 +53,78 @@
       <x-heft.page-header>
         <x-slot:lead>
                     <span class="text-[12.5px] text-ink-soft min-w-0 truncate">
-                        {{ $woche->zeitraum }}
+                        {{ $week->period }}
                       @if (auth()->user()->isAusbilder())
-                        · {{ $woche->azubi->name }}
+                        · {{ $week->azubi->name }}
                       @else
-                        · {{ $woche->erfassteTage }} von 5 Tagen erfasst
+                        · {{ $week->recordedDays }} von 5 Tagen erfasst
                       @endif
                     </span>
         </x-slot:lead>
 
-        <x-slot:actions>
+{{--        <x-slot:actions>--}}
 {{--          <x-button variant="secondary"--}}
 {{--                    size="sm"--}}
-{{--                    :href="route('wochenbericht.drucken', $woche)"--}}
+{{--                    :href="route('wochenbericht.drucken', $week)"--}}
 {{--          >Drucken--}}
 {{--          </x-button>--}}
-          @if ($woche->path)
-            <x-button variant="secondary"
-                      size="sm"
-                      :href="route('wochenberichte.pdf', ['path' => $woche->path])"
-            >PDF
-            </x-button>
-            <x-wochenbericht.sign-button :woche="$woche" />
-          @endif
-        </x-slot:actions>
+{{--          @if ($week->path)--}}
+{{--            <x-button variant="secondary"--}}
+{{--                      size="sm"--}}
+{{--                      :href="route('wochenberichte.pdf', ['path' => $week->path])"--}}
+{{--            >PDF--}}
+{{--            </x-button>--}}
+{{--            <x-wochenbericht.sign-button :week="$week" />--}}
+{{--          @endif--}}
+{{--        </x-slot:actions>--}}
       </x-heft.page-header>
 
       <div class="px-[22px] py-[22px] flex flex-col gap-4 flex-1">
         <div class="flex flex-wrap items-start justify-between gap-[18px] border-b border-rule pb-3.5">
           <div>
-            <h2 class="font-display text-[20px]">Wochenbericht KW {{ $woche->kw }}</h2>
+            <h2 class="font-display text-[20px]">Wochenbericht KW {{ $week->kw }}</h2>
             <p class="mt-1.5 text-[12.5px] text-ink-soft">
-              {{ $woche->azubi->name }} · {{ $woche->azubi->ausbildungsbetrieb }} · {{ $woche->azubi->abteilung }}
+              {{ $week->azubi->name }} · {{ $week->azubi->ausbildungsbetrieb }} · {{ $week->azubi->abteilung }}
             </p>
           </div>
-          <x-stamp :status="$woche->statusStempel"
+          <x-stamp :status="$week->statusStamp"
                    size="md"
-          >{{ $woche->statusText }}</x-stamp>
+          >{{ $week->statusText }}</x-stamp>
         </div>
 
         <div class="flex flex-col">
-          @foreach ($woche->tage as $tag)
+          @foreach ($week->days as $day)
             <div class="grid grid-cols-[78px_minmax(0,1fr)_auto] gap-4 items-start py-3 border-b border-rule">
               <div class="flex flex-col gap-0.5">
-                <span class="text-[13px]">{{ $tag->datum->isoFormat('dddd') }}</span>
-                <span class="text-[11.5px] text-ink-soft">{{ $tag->datum->format('d.m.Y') }}</span>
+                <span class="text-[13px]">{{ $day->datum->isoFormat('dddd') }}</span>
+                <span class="text-[11.5px] text-ink-soft">{{ $day->datum->format('d.m.Y') }}</span>
               </div>
 
               <div class="min-w-0 flex flex-col gap-[5px]">
-                                <span @class(['text-[13.5px] leading-snug', ! $tag->taetigkeiten && 'text-ink-soft italic'])>
-                                    {{ $tag->taetigkeiten ?: 'noch nicht erfasst' }}
-                                </span>
+                <span @class(['text-[13.5px] leading-snug', ! $day->taetigkeiten && 'text-ink-soft italic'])>
+                    {{ $day->taetigkeiten ?: 'noch nicht erfasst' }}
+                </span>
 
-                @if ($tag->lernschritte->isNotEmpty())
+                @if ($day->lernschritte->isNotEmpty())
                   <span class="text-[11.5px] text-ink-soft">
-                                        {{ $tag->lernschritte->map(fn ($s) => $s->referenz . ' · ' . $s->titel)->join(', ') }}
-                                    </span>
+                    {{ $day->lernschritte->map(fn ($s) => $s->referenz . ' · ' . $s->titel)->join(', ') }}
+                  </span>
                 @endif
               </div>
 
-              <span class="text-[12.5px] text-ink-soft whitespace-nowrap">{{ $tag->dauer ?: '—' }}</span>
+              <span class="text-[12.5px] text-ink-soft whitespace-nowrap">{{ $day->dauer ?: '—' }}</span>
             </div>
           @endforeach
         </div>
 
         <div class="mt-auto grid grid-cols-1 sm:grid-cols-2 gap-[18px] border-t border-rule pt-[18px]">
           <x-wochenbericht.signatur rolle="Auszubildende"
-                                    :name="$woche->azubi->name"
-                                    :datum="$woche->eingereicht_am"
+                                    :name="$week->azubi->name"
+                                    :date="$week->eingereicht_am"
           />
           <x-wochenbericht.signatur rolle="Ausbilder"
-                                    :name="$woche->ausbilder?->name"
-                                    :datum="$woche->unterschrieben_am"
+                                    :name="$week->ausbilder?->name"
+                                    :date="$week->unterschrieben_am"
           />
         </div>
       </div>

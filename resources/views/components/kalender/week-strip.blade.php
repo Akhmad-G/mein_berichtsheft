@@ -5,7 +5,7 @@
         <span class="flex items-center gap-[5px] min-w-0">
             @foreach ($days as $day)
             @php
-              $d  = $day['datum'];
+              $d  = $day['date'];
               $on = $selected && $d->isSameDay($selected);
             @endphp
             <a href="{{ route('tagesbericht', ['datum' => $d->toDateString()]) }}" @class([
