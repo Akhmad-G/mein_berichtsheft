@@ -87,7 +87,7 @@
           <x-theme-toggle />
 
           @auth
-            <a href="{{ route('kalender') }}"
+            <a href="{{ route('calendar') }}"
                class="text-sm font-medium px-4 py-2 rounded-md bg-ink text-paper"
             >Zum Berichtsheft</a>
           @else
@@ -117,7 +117,7 @@
         Grund auf neu schreiben, bevor er unterschrieben wird. </p>
       <div class="flex gap-3.5 mt-8">
         @auth
-          <a href="{{ route('kalender') }}"
+          <a href="{{ route('calendar') }}"
              class="px-5 py-3 rounded-md bg-ink text-paper text-[15px] font-medium"
           >Zum Berichtsheft</a>
         @else
@@ -318,7 +318,7 @@
       <h2 class="font-display text-[28px] max-w-md">Diese Woche noch anfangen, statt sie am Freitag aufzuarbeiten.</h2>
 
       @auth
-        <a href="{{ route('kalender') }}"
+        <a href="{{ route('calendar') }}"
            class="px-5 py-3 rounded-md bg-paper text-ink text-[15px] font-medium shrink-0"
         >Zum Berichtsheft</a>
       @else

@@ -1,5 +1,11 @@
 @props(['current', 'items' => []])
 
+{{--
+  Register tabs: the active tab shares its line with the page below
+  (border-bottom in paper colour + -1px); the following tabs tuck in
+  behind its rounded corner (-10px, lower z-index).
+  $items: [['key', 'label', 'href', 'badge'], …] — from App\View\Composers\TabsComposer
+--}}
 <div class="flex relative z-1">
   @foreach ($items as $i => $item)
     @php
@@ -7,8 +13,9 @@
       $z  = $on ? 2 : count($items) - $i;
     @endphp
 
-    <a href="{{ $item['href'] }}"
-       style="z-index: {{ $z }}"
+    <a
+      href="{{ $item['href'] }}"
+      style="z-index: {{ $z }}"
       @class([
           'relative flex items-center gap-[9px] border border-rule rounded-t-[9px] cursor-pointer',
           $i > 0 ? '-ml-2.5 pl-[29px] pr-5 py-[11px]' : 'px-5 py-[11px]',
@@ -17,15 +24,18 @@
               : 'bg-[color-mix(in_oklab,var(--color-rule)_20%,var(--color-paper-raised))] text-ink-soft',
       ])
     >
-            <span @class(['font-display text-[14px] tracking-[.02em]', $on && 'font-medium'])>
-                {{ $item['label'] }}
-            </span>
+      <span @class(['font-display text-[14px] tracking-[.02em]', $on && 'font-medium'])>
+          {{ $item['label'] }}
+      </span>
 
       @if (! empty($item['badge']))
         <span @class([
-                    'text-[10.5px] tracking-[.06em] uppercase',
-                    $on ? 'text-stamp' : 'text-ink-soft',
-                ])>{{ $item['badge'] }}</span>
+              'text-[10.5px] tracking-[.06em] uppercase',
+              $on ? 'text-stamp' : 'text-ink-soft',
+              ])
+        >
+          {{ $item['badge'] }}
+        </span>
       @endif
     </a>
   @endforeach

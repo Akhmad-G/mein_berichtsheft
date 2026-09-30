@@ -2,18 +2,27 @@
 
 namespace App\Contracts;
 
-use App\Models\User;
-
+/**
+ * Low-level access to the reports repository.
+ * Knows nothing about days/weeks — folder layout lives in App\Support\ReportPath,
+ * domain logic in App\Repositories\ReportRepository.
+ */
 interface GitLabServiceInterface {
-  public function saveReport(User $user, string $filename, array $data, string $action = 'create'): void;
-
+  /** Does a (non-empty) folder exist? */
   public function pathExists(string $path): bool;
 
-  public function getReportsForWeek(User $user, \Carbon\Carbon $weekStart): array;
+  /** Tree entries under $path: [['id' => sha, 'name', 'path', 'type' => 'blob'|'tree'], …]. Missing path → []. */
+  public function listTree(string $path, bool $recursive = false): array;
 
-  public function listReports(User $user): array;
+  /** Decoded JSON of a blob by sha. Blobs are immutable → cached forever. */
+  public function readBlob(string $sha): ?array;
 
-  public function getReport(User $user, string $path): array;
+  /** Decoded JSON of a file by path, null if it does not exist. */
+  public function readFile(string $path): ?array;
 
-  public function deleteReport(User $user, string $path): void;
+  /**
+   * One commit with several actions.
+   * Action: ['action' => 'create'|'update'|'delete'|'move', 'file_path' => …, 'content' => …, 'previous_path' => …]
+   */
+  public function commit(string $message, array $actions): void;
 }

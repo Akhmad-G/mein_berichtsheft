@@ -3,9 +3,8 @@
 namespace App\Services;
 
 use App\Contracts\GitLabServiceInterface;
-use App\Models\User;
-use App\Support\GitLabPath;
-use Carbon\Carbon;
+use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -14,131 +13,109 @@ class GitLabService implements GitLabServiceInterface {
   protected string $baseUrl;
   protected string $token;
   protected string $projectId;
-  protected string $branch = 'main';
+  protected string $branch;
 
   public function __construct() {
-    $this->baseUrl = config('services.gitlab.url');
-    $this->token = config('services.gitlab.token');
+    $this->baseUrl   = rtrim(config('services.gitlab.url'), '/');
+    $this->token     = config('services.gitlab.token');
     $this->projectId = config('services.gitlab.project_id');
-  }
-
-  /**
-   * Saves a report (Tagesbericht or Wochenbericht) as a commit in GitLab.
-   *
-   * @param User $user
-   * @param string $filename e.g., "2026-08-25 Tagesbericht.json"
-   * @param array $data report data, to be encoded as JSON
-   */
-
-  public function saveReport(User $user, string $filename, array $data, string $action = 'create'): void {
-
-    if (!$user->gitlab_path) {
-      throw new RuntimeException("User #{$user->id} has no gitlab_path assigned yet.");
-    }
-
-    $filePath = "{$user->gitlab_path}/{$filename}";
-
-    $content = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-
-    $response = Http::withHeaders(['PRIVATE-TOKEN' => $this->token,])->post("{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/commits", ['branch' => $this->branch, 'commit_message' => "Add {$filename} for {$user->gitlab_path}", 'actions' => [['action' => $action, 'file_path' => $filePath, 'content' => $content,],],]);
-
-    if ($response->failed()) {
-      Log::error('GitLab commit failed', ['user_id' => $user->id, 'file_path' => $filePath, 'status' => $response->status(), 'body' => $response->body(),]);
-
-      throw new RuntimeException("GitLab commit failed for {$filePath}: {$response->status()} {$response->body()}");
-    }
+    $this->branch    = config('services.gitlab.branch', 'main');
   }
 
   public function pathExists(string $path): bool {
-    $response = Http::withHeaders(['PRIVATE-TOKEN' => $this->token,])
-      ->get("{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/tree", [
-        'path' => $path,
-        'ref' => $this->branch,
-        'per_page' => 1,
+    $response = $this->api()->get('tree', [
+      'path' => $path,
+      'ref' => $this->branch,
+      'per_page' => 1
+    ]);
+
+    return $response->successful() && $response->json() !== [];
+  }
+
+  public function listTree(string $path, bool $recursive = false): array
+  {
+    $items = [];
+    $page  = 1;
+
+    do {
+      $response = $this->api()->get('tree', [
+        'path'      => $path,
+        'ref'       => $this->branch,
+        'recursive' => $recursive ? 'true' : 'false',
+        'per_page'  => 100,
+        'page'      => $page,
       ]);
 
-    return $response->successful();
-  }
-
-  public function getReportsForWeek(User $user, Carbon $weekStart): array {
-    $weekEnd = $weekStart->copy()->endOfWeek();
-
-    // 1. Get the list of files in the user's folder.
-    $response = Http::withHeaders(['PRIVATE-TOKEN' => $this->token,])->get("{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/tree", ['path' => $user->gitlab_path, 'ref' => $this->branch, 'per_page' => 100,]);
-
-    if ($response->failed()) {
-      throw new RuntimeException("Failed to list files for {$user->gitlab_path}: {$response->status()}");
-    }
-
-    $files = collect($response->json())->filter(fn($file) => str_ends_with($file['name'], 'Tagesbericht.json'))->filter(function ($file) use ($weekStart, $weekEnd) {
-        // filename in the format "2026-08-31 Tagesbericht.json"
-        $date = Carbon::parse(substr($file['name'], 0, 10));
-        return $date->between($weekStart, $weekEnd);
-      });
-
-    // 2. Download the contents of each file.
-    $reportsByWeekday = [];
-
-    foreach ($files as $file) {
-      $encodedPath = rawurlencode($file['path']);
-
-      $fileResponse = Http::withHeaders(['PRIVATE-TOKEN' => $this->token,])->get("{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/files/{$encodedPath}/raw", ['ref' => $this->branch,]);
-
-      if ($fileResponse->failed()) {
-        Log::warning('Failed to fetch report', ['path' => $file['path']]);
-        continue;
+      if ($response->status() === 404) {
+        return [];
+      }
+      if ($response->failed()) {
+        throw new RuntimeException("Failed to list {$path}: {$response->status()}");
       }
 
-      $data = json_decode($fileResponse->body(), true);
-      $weekday = Carbon::parse($data['datum'])->translatedFormat('l'); // Montag, Dienstag, ...
+      array_push($items, ...$response->json());
+      $page = (int) $response->header('X-Next-Page');
+    } while ($page > 0);
 
-      $reportsByWeekday[$weekday] = $data;
-    }
-
-    return $reportsByWeekday;
+    return $items;
   }
 
-  public function listReports(User $user): array {
-    if (!$user->gitlab_path) {
-      return [];
-    }
+  public function readBlob(string $sha): ?array
+  {
+    return Cache::rememberForever("gitlab:blob:{$sha}", function () use ($sha) {
+      $response = $this->api()->get("blobs/{$sha}/raw");
 
-    $response = Http::withHeaders(['PRIVATE-TOKEN' => $this->token,])->get("{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/tree", ['path' => $user->gitlab_path, 'ref' => $this->branch, 'per_page' => 100,]);
+      if ($response->failed()) {
+        throw new RuntimeException("Failed to fetch blob {$sha}: {$response->status()}");
+      }
 
-    if ($response->failed()) {
-      Log::error('Failed to list reports', ['user_id' => $user->id, 'status' => $response->status(),]);
-      return [];
-    }
-
-    return collect($response->json())->filter(fn($file) => str_ends_with($file['name'], '.json'))->map(function ($file) {
-        $type = str_contains($file['name'], 'Wochenbericht') ? 'wochenbericht' : 'tagesbericht';
-
-        return ['name' => $file['name'], 'path' => $file['path'], 'encoded_path' => GitLabPath::encode($file['path']), 'type' => $type,];
-      })->sortByDesc('name') // Die Namen beginnen mit dem Datum, daher gilt: Sortieren nach Name = Sortieren nach Datum
-      ->values()->all();
+      return json_decode($response->body(), true);
+    });
   }
 
-  public function getReport(User $user, string $path): array {
-    $encodedPath = rawurlencode($path);
+  public function readFile(string $path): ?array
+  {
+    $response = $this->api()->get('files/' . rawurlencode($path) . '/raw', ['ref' => $this->branch]);
 
-    $response = Http::withHeaders(['PRIVATE-TOKEN' => $this->token,])->get("{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/files/{$encodedPath}/raw", ['ref' => $this->branch,]);
-
+    if ($response->status() === 404) {
+      return null;
+    }
     if ($response->failed()) {
-      throw new RuntimeException("Failed to fetch report {$path}: {$response->status()}");
+      throw new RuntimeException("Failed to fetch {$path}: {$response->status()}");
     }
 
     return json_decode($response->body(), true);
   }
 
-  public function deleteReport(User $user, string $path): void {
-    $filename = basename($path);
+  public function commit(string $message, array $actions): void
+  {
+    if ($actions === []) {
+      return;
+    }
 
-    $response = Http::withHeaders(['PRIVATE-TOKEN' => $this->token,])->post("{$this->baseUrl}/api/v4/projects/{$this->projectId}/repository/commits", ['branch' => $this->branch, 'commit_message' => "Delete {$filename} for {$user->gitlab_path}", 'actions' => [['action' => 'delete', 'file_path' => $path,],],]);
+    $response = $this->api()->post('commits', [
+      'branch'         => $this->branch,
+      'commit_message' => $message,
+      'actions'        => $actions,
+    ]);
 
     if ($response->failed()) {
-      Log::error('GitLab delete failed', ['user_id' => $user->id, 'file_path' => $path, 'status' => $response->status(), 'body' => $response->body(),]);
+      Log::error('GitLab commit failed', [
+        'message' => $message,
+        'paths'   => array_column($actions, 'file_path'),
+        'status'  => $response->status(),
+        'body'    => $response->body(),
+      ]);
 
-      throw new RuntimeException("GitLab delete failed for {$path}: {$response->status()} {$response->body()}");
+      throw new RuntimeException("GitLab commit failed: {$response->status()} {$response->body()}");
     }
+  }
+
+  protected function api(): PendingRequest
+  {
+    return Http::withHeaders(['PRIVATE-TOKEN' => $this->token])
+      ->baseUrl("{$this->baseUrl}/api/v4/projects/" . rawurlencode($this->projectId) . '/repository')
+      ->acceptJson()
+      ->timeout(15);
   }
 }
