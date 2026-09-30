@@ -87,17 +87,9 @@
           <x-theme-toggle />
 
           @auth
-            @if (Auth::user()->ausbildung_info_completed_at)
-              <a href="{{ url('/dashboard') }}"
-                 class="text-sm font-medium px-4 py-2 rounded-md bg-ink text-paper"
-              >Zum Dashboard</a>
-            @else
-              @if (Route::has('ausbildung-info.create'))
-                <a href="{{ route('ausbildung-info.create') }}"
-                   class="text-sm font-medium px-4 py-2 rounded-md bg-ink text-paper"
-                >Registrierung fortsetzen</a>
-              @endif
-            @endif
+            <a href="{{ route('kalender') }}"
+               class="text-sm font-medium px-4 py-2 rounded-md bg-ink text-paper"
+            >Zum Berichtsheft</a>
           @else
             <a href="{{ route('login') }}"
                class="text-sm font-medium px-4 py-2 rounded-md border border-rule"
@@ -124,14 +116,20 @@
         übernimmt sie automatisch. Was nicht passt, kannst du direkt dort ändern – oder den Wochenbericht komplett von
         Grund auf neu schreiben, bevor er unterschrieben wird. </p>
       <div class="flex gap-3.5 mt-8">
-        @if (Route::has('register'))
-          <a href="{{ route('register') }}"
+        @auth
+          <a href="{{ route('kalender') }}"
              class="px-5 py-3 rounded-md bg-ink text-paper text-[15px] font-medium"
-          >Als Azubi starten</a>
-        @endif
-        <a href="#rollen"
-           class="px-5 py-3 rounded-md border border-rule text-[15px] font-medium"
-        >Für Ausbilder ansehen</a>
+          >Zum Berichtsheft</a>
+        @else
+          @if (Route::has('register'))
+            <a href="{{ route('register') }}"
+               class="px-5 py-3 rounded-md bg-ink text-paper text-[15px] font-medium"
+            >Als Azubi starten</a>
+          @endif
+          <a href="#rollen"
+             class="px-5 py-3 rounded-md border border-rule text-[15px] font-medium"
+          >Für Ausbilder ansehen</a>
+        @endauth
       </div>
       <p class="mt-4 text-[13.5px] text-ink-soft">
         Registrierung aktuell für Azubis. Ausbilder-Zugänge richtet dein Betrieb ein. </p>
@@ -318,11 +316,18 @@
   <section class="bg-ink text-paper py-16 mt-5">
     <div class="max-w-5xl mx-auto px-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
       <h2 class="font-display text-[28px] max-w-md">Diese Woche noch anfangen, statt sie am Freitag aufzuarbeiten.</h2>
-      @if (Route::has('register'))
-        <a href="{{ route('register') }}"
+
+      @auth
+        <a href="{{ route('kalender') }}"
            class="px-5 py-3 rounded-md bg-paper text-ink text-[15px] font-medium shrink-0"
-        >Als Azubi starten</a>
-      @endif
+        >Zum Berichtsheft</a>
+      @else
+        @if (Route::has('register'))
+          <a href="{{ route('register') }}"
+             class="px-5 py-3 rounded-md bg-paper text-ink text-[15px] font-medium shrink-0"
+          >Als Azubi starten</a>
+        @endif
+      @endauth
     </div>
   </section>
 
