@@ -38,7 +38,7 @@ class RegisteredUserController extends Controller {
       'ausbildungsbetrieb' => ['required', 'string', 'max:255'],
       'abteilung' => ['nullable', 'string', 'max:255'],
       'ausbildungsbeginn' => ['required', 'date'],
-      'gitlab_consent' => ['accepted'],
+      'gitlab_einverstanden' => ['accepted'],
       ]);
 
     $user = User::create([

@@ -2,9 +2,9 @@
 
 <span class="flex gap-1">
     @for ($i = 0; $i < $total; $i++)
-    <span @class([
+        <span @class([
             'w-[13px] h-[5px] rounded-sm',
-            $i < $filled ? 'bg-bericht' : 'bg-rule opacity-50',
+            $i < $filled ? 'bg-report' : 'bg-rule opacity-50',
         ])></span>
-  @endfor
+    @endfor
 </span>

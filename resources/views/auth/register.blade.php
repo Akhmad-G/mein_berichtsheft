@@ -102,7 +102,7 @@
         </x-form.section>
 
         <div class="border-t border-rule pt-4 grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
-          <x-form.checkbox name="gitlab_consent">
+          <x-form.checkbox name="gitlab_einverstanden">
             Ich bin einverstanden, dass meine Berichte im GitLab meines Betriebs gespeichert werden.
           </x-form.checkbox>
 
