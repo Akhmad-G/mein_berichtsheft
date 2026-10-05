@@ -26,24 +26,24 @@ class CalendarController extends Controller {
 
     $reports = $this->reports->days($azubi, $gridStart, $gridEnd);
 
-    $cells = collect(CarbonPeriod::create($gridStart, $gridEnd))->map(fn($d) => [
-      'date' => CarbonImmutable::instance($d),
-      'inMonth' => $d->isSameMonth($month),
-      'state' => $d->isWeekend() ? 'free' : $reports[$d->toDateString()]->calendarState(),
+    $cells = collect(CarbonPeriod::create($gridStart, $gridEnd))->map(fn($day) => [
+      'date' => CarbonImmutable::instance($day),
+      'inMonth' => $day->isSameMonth($month),
+      'state' => $day->isWeekend() ? 'free' : $reports[$day->toDateString()]->calendarState(),
     ]);
 
     $day = $reports[$selected->toDateString()] ?? $this->reports->day($azubi, $selected);
     $week = $this->reports->week($azubi, $selected->isoWeekYear(), $selected->isoWeek());
 
     $typeCount = $day->type->isWork() ? 0 : $reports
-      ->filter(fn($r) => $r->date->isSameMonth($month) && $r->type === $day->type)
+      ->filter(fn($dayReport) => $dayReport->date->isSameMonth($month) && $dayReport->type === $day->type)
       ->count();
 
     return view('calendar.index', [
       'month' => $month,
       'cells' => $cells,          // [['date', 'inMonth', 'state'], …] Mon-first grid
-      'day' => $day,            // App\Data\DayReport
-      'week' => $week,           // App\Data\WeeklyReport with days
+      'day' => $day,              // App\Data\DayReport
+      'week' => $week,            // App\Data\WeeklyReport with days
       'typeCount' => $typeCount,
       'canEdit' => $week->isEditable(),
       'learningSteps' => config('reports.learning_steps', []),

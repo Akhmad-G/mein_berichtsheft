@@ -4,7 +4,8 @@
   $cells: [['date' => CarbonImmutable, 'inMonth' => bool,
             'state' => report|open|school|vacation|sick|holiday|free], …]  — Monday-first grid
   The soft tint comes from color-mix, so the same class works in both themes.
---}}@php
+--}}
+@php
   $tint = [
       'report'   => 'bg-[color-mix(in_oklab,var(--color-report-soft)_75%,var(--color-paper))]',
       'vacation' => 'bg-[color-mix(in_oklab,var(--color-vacation-soft)_75%,var(--color-paper))]',
@@ -47,17 +48,19 @@
             $isSelected && 'shadow-[inset_0_0_0_2px_var(--color-ink)]',
         ])
       >
-                <span class="flex items-start justify-between gap-1">
-                    <span @class([
-                        'font-display text-[15px]',
-                        ! $inMonth && 'text-ink-soft opacity-45',
-                        $isToday && 'border-b-2 border-stamp pb-px',
-                    ])>{{ $date->day }}</span>
+        <span class="flex items-start justify-between gap-1">
+            <span
+              @class([
+                'font-display text-[15px]',
+                ! $inMonth && 'text-ink-soft opacity-45',
+                $isToday && 'border-b-2 border-stamp pb-px',
+              ])
+            >{{ $date->day }}</span>
 
-                    @if ($inMonth && $state === 'report')
-                    <x-calendar.ink-check />
-                  @endif
-                </span>
+            @if ($inMonth && $state === 'report')
+            <x-calendar.ink-check />
+          @endif
+        </span>
 
         @if ($inMonth && isset($labels[$state]))
           <span class="text-[10.5px] text-ink-soft truncate">{{ $labels[$state] }}</span>

@@ -22,8 +22,10 @@ class WeeklyReportController extends Controller
         $filter = in_array($request->query('filter'), ['open', 'signed'], true) ? $request->query('filter') : 'all';
 
         $weeks = $this->weeksFor($viewer, $year)
-            ->when($filter === 'open', fn ($c) => $c->reject(fn (WeeklyReport $w) => $w->isSigned()))
-            ->when($filter === 'signed', fn ($c) => $c->filter(fn (WeeklyReport $w) => $w->isSigned()))
+            ->when($filter === 'open', fn ($collection) => $collection
+              ->reject(fn (WeeklyReport $weeklyReports) => $weeklyReports->isSigned()))
+            ->when($filter === 'signed', fn ($collection) => $collection
+              ->filter(fn (WeeklyReport $weeklyReports) => $weeklyReports->isSigned()))
             ->values();
 
         if ($user && $week) {

@@ -1,7 +1,7 @@
 <x-layouts.app title="Kalender">
 
   <x-notebook.tabs current="calendar"
-               :items="$tabs"
+                   :items="$tabs"
   />
 
   <x-notebook>
