@@ -11,13 +11,13 @@
   >
   <title>{{ $title ? $title . ' — Mein Tagesbericht' : 'Mein Tagesbericht' }}</title>
 
-  {{-- Theme vor dem ersten Paint setzen: kein Aufblitzen der falschen Farbe --}}
+  {{-- Set the theme before the first paint: no flashing of the wrong color. Toggling lives in resources/js/app.js--}}
   <script>
     (function () {
-      let g = localStorage.getItem('theme');
-      let d = g === 'dark' || (!g && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      document.documentElement.classList.toggle('dark', d);
-      document.documentElement.style.colorScheme = d ? 'dark' : 'light';
+      let getTheme = localStorage.getItem('theme');
+      let darkTheme = getTheme === 'dark' || (!getTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.classList.toggle('dark', darkTheme);
+      document.documentElement.style.colorScheme = darkTheme ? 'dark' : 'light';
     })();
   </script>
 

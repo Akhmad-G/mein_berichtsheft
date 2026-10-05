@@ -1,3 +1,4 @@
+{{-- Name + role as a button; opens Profil / Abmelden --}}
 @php $user = auth()->user(); @endphp
 
 <div class="relative"
@@ -9,7 +10,7 @@
                hover:bg-paper-raised aria-expanded:bg-paper-raised cursor-pointer transition-colors"
           aria-expanded="false"
   >
-    <span class="text-[13.5px]">{{ $user->vorname }} {{ $user->nachname }}</span>
+    <span class="text-[13.5px]">{{ $user->name }}</span>
     <span class="text-[11.5px] text-ink-soft">{{ $user->isAusbilder() ? 'Ausbilder' : 'Azubi' }}</span>
 
     <svg viewBox="0 0 12 12"
@@ -31,7 +32,7 @@
        class="absolute top-[calc(100%+6px)] right-0 min-w-[190px] z-20 flex flex-col overflow-hidden
                border border-rule rounded-md bg-paper shadow-[0_14px_30px_-18px_rgba(0,0,0,.45)]"
   >
-    <a href="{{ route('profile.edit') }}"
+    <a href="{{ route('profile.show') }}"
        class="px-3.5 py-2.5 text-[13.5px] border-b border-rule hover:bg-paper-line"
     >Profil</a>
 

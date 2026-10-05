@@ -28,8 +28,8 @@ class AuthenticatedSessionController extends Controller {
     $user = $request->user();
 
     $redirectRoute = $user->isAusbilder()
-      ? 'wochenberichte.index'
-      : 'kalender';
+      ? 'weekly-reports.index'
+      : 'calendar';
 
     return redirect()->intended(route($redirectRoute, absolute: false));
   }

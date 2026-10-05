@@ -37,6 +37,7 @@ class User extends Authenticatable {
       'role' => UserRole::class,];
   }
 
+  //?  No usages?
   public function assignGitLabPath(GitLabServiceInterface $gitLabService): void {
     if (!$this->isAzubi()) {
       return;
@@ -80,6 +81,11 @@ class User extends Authenticatable {
     return trim("{$this->nachname} {$this->vorname}");
   }
 
+  protected function initials(): Attribute {
+    return Attribute::make(get:
+      fn() => mb_strtoupper(mb_substr($this->vorname ?? '', 0, 1) . mb_substr($this->nachname ?? '', 0, 1)));
+  }
+
   public function ausbilder(): BelongsTo {
     return $this->belongsTo(User::class, 'ausbilder_id');
   }
@@ -96,11 +102,17 @@ class User extends Authenticatable {
     return $this->role === UserRole::Ausbilder;
   }
 
+  //  ! delete
   public function nextBerichtsnummer(): int {
     $number = $this->next_berichtsnummer;
 
     $this->increment('next_berichtsnummer');
 
     return $number;
+  }
+
+// TODO AusbildungsPeriod
+  public function trainingPeriod(): ?string {
+    return $this->ausbildungsbeginn ? 'seit ' . $this->ausbildungsbeginn->format('d.m.Y') : null;
   }
 }

@@ -11,7 +11,7 @@
   >
   <title>{{ $title ? $title . ' — Mein Berichtsheft' : 'Mein Berichtsheft' }}</title>
 
-  {{-- set theme before first paint (no flash); toggling lives in resources/js/app.js --}}
+  {{-- Set the theme before the first paint: no flashing of the wrong color. Toggling lives in resources/js/app.js --}}
   <script>
     (function () {
       let getTheme = localStorage.getItem('theme');

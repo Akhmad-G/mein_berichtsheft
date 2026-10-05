@@ -2,51 +2,49 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
+use App\Repositories\ReportRepository;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
 
+/** Profile page: personal data (left) + cover sheet of the training record (right). */
 class ProfileController extends Controller {
-  /**
-   * Display the user's profile form.
-   */
-  public function edit(Request $request): View {
-    return view('profile.edit', ['user' => $request->user(),]);
+  public function __construct(private ReportRepository $reports) {
   }
 
-  /**
-   * Update the user's profile information.
-   */
-  public function update(ProfileUpdateRequest $request): RedirectResponse {
-    $request->user()->fill($request->validated());
+  public function show(Request $request) {
+    $viewer = $request->user();
 
-    if ($request->user()->isDirty('email')) {
-      $request->user()->email_verified_at = null;
+    if ($viewer->isAusbilder()) {
+      $azubis = $viewer->azubis()->orderBy('nachname')->get();
+      $azubi = $azubis->firstWhere('id', (int) $request->query('azubi')) ?? $azubis->first();
+      $details = [
+        'Name' => $viewer->name,
+        'E-Mail' => $viewer->email,
+        'Betrieb' => $viewer->ausbildungsbetrieb,
+        'Azubis' => $azubis->count(),
+      ];
+    } else {
+      $azubis = collect();
+      $azubi = $viewer;
+      $details = [
+        'Name' => $viewer->name,
+        'E-Mail' => $viewer->email,
+        'Ausbildungsberuf' => $viewer->ausbildungsberuf,
+        'Betrieb' => $viewer->ausbildungsbetrieb,
+        'Abteilung' => $viewer->abteilung,
+        'Ausbildungsbeginn' => $viewer->ausbildungsbeginn?->format('d.m.Y'),
+        'Ausbilder' => $viewer->ausbilder?->name,
+      ];
     }
 
-    $request->user()->save();
+    $signedWeeks = $azubi?->gitlab_path
+      ? $this->reports->allWeeks($azubi)->filter(fn($w) => $w->isSigned())->count()
+      : 0;
 
-    return Redirect::route('profile.edit')->with('status', 'profile-updated');
-  }
-
-  /**
-   * Delete the user's account.
-   */
-  public function destroy(Request $request): RedirectResponse {
-    $request->validateWithBag('userDeletion', ['password' => ['required', 'current_password'],]);
-
-    $user = $request->user();
-
-    Auth::logout();
-
-    $user->delete();
-
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
-
-    return Redirect::to('/');
+    return view('profile.show', [
+      'details' => $details,      // label => value
+      'azubi' => $azubi,        // ?User — whose record is shown
+      'azubis' => $azubis,       // Ausbilder only, for the switcher
+      'signedWeeks' => $signedWeeks,
+    ]);
   }
 }
