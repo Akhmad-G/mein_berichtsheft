@@ -24,7 +24,12 @@
 <div class="flex flex-col flex-1">
   <div class="grid grid-cols-7 border-b border-rule">
     @foreach (['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'] as $weekday)
-      <div class="px-[9px] py-2 text-[10.5px] tracking-[.08em] uppercase text-ink-soft">{{ $weekday }}</div>
+      @if($weekday == 'Sa' || $weekday == 'So')
+        <div class="px-[9px] py-2 text-[10.5px] tracking-[.08em] uppercase text-red-400">{{ $weekday }}</div>
+      @else
+        <div class="px-[9px] py-2 text-[10.5px] tracking-[.08em] uppercase text-ink-soft">{{ $weekday }}</div>
+      @endif
+
     @endforeach
   </div>
 
@@ -39,21 +44,21 @@
         $clickable  = $inMonth && $state !== 'free';
       @endphp
 
-      <a href="{{ $clickable ? route('calendar', ['day' => $date->toDateString()]) : '#' }}"
+      <a @if ($clickable) href="{{ route('calendar', ['day' => $date->toDateString()]) }}" @endif
         @class([
             'flex flex-col justify-between gap-1 min-h-[66px] px-[9px] py-2 text-left',
             'border-r border-b border-rule',
             $inMonth ? $tint[$state] : 'bg-transparent',
-            ! $clickable && 'pointer-events-none',
-            $isSelected && 'shadow-[inset_0_0_0_2px_var(--color-ink)]',
+            'pointer-events-none cursor-default' => ! $clickable,
+            'shadow-[inset_0_0_0_2px_var(--color-ink)]' => $isSelected,
         ])
       >
         <span class="flex items-start justify-between gap-1">
             <span
               @class([
                 'font-display text-[15px]',
-                ! $inMonth && 'text-ink-soft opacity-45',
-                $isToday && 'border-b-2 border-stamp pb-px',
+                'text-ink-soft opacity-45' => ! $inMonth,
+                'border-b-2 border-stamp pb-px' => $isToday,
               ])
             >{{ $date->day }}</span>
 
