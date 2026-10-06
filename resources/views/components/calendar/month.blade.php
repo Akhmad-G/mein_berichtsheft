@@ -24,12 +24,7 @@
 <div class="flex flex-col flex-1">
   <div class="grid grid-cols-7 border-b border-rule">
     @foreach (['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'] as $weekday)
-      @if($weekday == 'Sa' || $weekday == 'So')
-        <div class="px-[9px] py-2 text-[10.5px] tracking-[.08em] uppercase text-red-400">{{ $weekday }}</div>
-      @else
-        <div class="px-[9px] py-2 text-[10.5px] tracking-[.08em] uppercase text-ink-soft">{{ $weekday }}</div>
-      @endif
-
+      <div class="px-[9px] py-2 text-[10.5px] tracking-[.08em] uppercase text-ink-soft">{{ $weekday }}</div>
     @endforeach
   </div>
 
@@ -57,6 +52,7 @@
             <span
               @class([
                 'font-display text-[15px]',
+                'text-sick' => $inMonth && $date->isWeekend(),
                 'text-ink-soft opacity-45' => ! $inMonth,
                 'border-b-2 border-stamp pb-px' => $isToday,
               ])
