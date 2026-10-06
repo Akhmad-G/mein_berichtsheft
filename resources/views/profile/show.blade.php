@@ -2,7 +2,7 @@
 
     {{-- no tabs: way back as its own button, folder rounded on all corners --}}
     <div class="flex pb-2.5">
-        <x-button variant="secondary" size="sm" :href="route('home')">
+        <x-button variant="secondary" size="sm" :href="route('home')" class="bg-paper-line">
             <svg viewBox="0 0 12 12" class="w-2.5 h-2.5"><path d="M7.5 1.5 L3 6 L7.5 10.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Zurück zum Heft
         </x-button>

@@ -19,8 +19,10 @@
     $tone = $tones[$status] ?? $tones['open'];
 @endphp
 
-<span @class([
+<span
+  @class([
     'inline-flex items-center border rounded-full whitespace-nowrap shrink-0 uppercase tracking-[.06em]',
     $tone,
     $size === 'md' ? 'text-[12px] px-[13px] py-[5px]' : 'text-[11px] px-[9px] py-[3px]',
-])>{{ $slot }}</span>
+  ])
+>{{ $slot }}</span>
