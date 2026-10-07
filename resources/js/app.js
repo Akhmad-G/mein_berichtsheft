@@ -8,6 +8,7 @@ document.querySelectorAll('[data-theme-toggle]').forEach(function (themeToggle) 
 
     document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    document.dispatchEvent(new CustomEvent('theme-changed'));
   });
 });
 
@@ -79,6 +80,110 @@ document.querySelectorAll('[data-day-type]').forEach((group) => {
   }
 
   apply();
+});
+
+// ... existing code ...
+
+document.querySelectorAll('[data-signature-modal]').forEach((wrap) => {
+  const openButtons = wrap.querySelectorAll('[data-signature-open]');
+  const closeButtons = wrap.querySelectorAll('[data-signature-close]');
+  const backdrop = wrap.querySelector('[data-signature-backdrop]');
+  const canvas = wrap.querySelector('[data-signature-pad]');
+  const clearButton = wrap.querySelector('[data-signature-clear]');
+  const submitButton = wrap.querySelector('[data-signature-submit]');
+  const input = wrap.querySelector('[data-signature-input]');
+
+  if (!backdrop || !canvas || !clearButton || !submitButton || !input) return;
+
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let hasDrawing = false;
+
+  const applyInkColor = () => {
+    ctx.strokeStyle = document.documentElement.classList.contains('dark')
+      ? '#EDE7D8'
+      : '#20262C';
+  };
+
+  applyInkColor();
+  document.addEventListener('theme-changed', applyInkColor);
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  const setOpen = (open) => {
+    backdrop.hidden = !open;
+    document.body.classList.toggle('overflow-hidden', open);
+
+    if (!open) {
+      clearSignature();
+    }
+  };
+
+  const getPos = (event) => {
+    const rect = canvas.getBoundingClientRect();
+    const point = event.touches ? event.touches[0] : event;
+
+    return {
+      x: (point.clientX - rect.left) * (canvas.width / rect.width),
+      y: (point.clientY - rect.top) * (canvas.height / rect.height),
+    };
+  };
+
+  const start = (event) => {
+    drawing = true;
+    hasDrawing = true;
+    submitButton.disabled = false;
+
+    const pos = getPos(event);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+
+    event.preventDefault();
+  };
+
+  const move = (event) => {
+    if (!drawing) return;
+
+    const pos = getPos(event);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+
+    event.preventDefault();
+  };
+
+  const stop = () => {
+    drawing = false;
+    input.value = hasDrawing ? canvas.toDataURL('image/png') : '';
+  };
+
+  openButtons.forEach((button) => button.addEventListener('click', () => setOpen(true)));
+  closeButtons.forEach((button) => button.addEventListener('click', () => setOpen(false)));
+
+  backdrop.addEventListener('click', (event) => {
+    if (event.target === backdrop) setOpen(false);
+  });
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', stop);
+  canvas.addEventListener('mouseleave', stop);
+  canvas.addEventListener('touchstart', start);
+  canvas.addEventListener('touchmove', move);
+  canvas.addEventListener('touchend', stop);
+
+  const clearSignature = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    hasDrawing = false;
+    input.value = '';
+    submitButton.disabled = true;
+  };
+
+  clearButton.addEventListener('click', clearSignature);
+
+  wrap.querySelector('form')?.addEventListener('submit', () => {
+    input.value = canvas.toDataURL('image/png');
+  });
 });
 
 Alpine.start();
