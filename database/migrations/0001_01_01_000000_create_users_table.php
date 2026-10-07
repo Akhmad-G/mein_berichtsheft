@@ -29,8 +29,6 @@ return new class extends Migration {
       $table->string('abteilung')->nullable();
       $table->date('ausbildungsbeginn')->nullable();
 
-      $table->unsignedInteger('next_berichtsnummer')->default(1);
-
       $table->rememberToken();
       $table->timestamps();
     });

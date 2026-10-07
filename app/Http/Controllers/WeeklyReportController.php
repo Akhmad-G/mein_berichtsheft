@@ -57,18 +57,11 @@ class WeeklyReportController extends Controller
             return back()->withErrors(['week' => 'Die Woche ist noch nicht vollständig erfasst.']);
         }
 
-        // take the number only after the commit succeeded
-        $newNumber = $report->number === null;
-        $report->number ??= $user->next_berichtsnummer;
         $report->status = WeekStatus::Submitted;
         $report->submittedAt = CarbonImmutable::now();
         $report->submittedSignature = $this->signatureFromRequest($request);
 
         $this->reports->saveWeek($report, 'submit');
-
-        if ($newNumber) {
-            $user->increment('next_berichtsnummer');
-        }
 
         return back()->with('status', "KW {$week} ist zur Unterschrift gegeben.");
     }

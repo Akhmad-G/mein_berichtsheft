@@ -102,15 +102,6 @@ class User extends Authenticatable {
     return $this->role === UserRole::Ausbilder;
   }
 
-  //  ! delete
-  public function nextBerichtsnummer(): int {
-    $number = $this->next_berichtsnummer;
-
-    $this->increment('next_berichtsnummer');
-
-    return $number;
-  }
-
 // TODO AusbildungsPeriod
   public function trainingPeriod(): ?string {
     return $this->ausbildungsbeginn ? 'seit ' . $this->ausbildungsbeginn->format('d.m.Y') : null;
