@@ -98,6 +98,8 @@ document.querySelectorAll('[data-signature-modal]').forEach((wrap) => {
   const ctx = canvas.getContext('2d');
   let drawing = false;
   let hasDrawing = false;
+  let paths = [];
+  let currentPath = '';
 
   const applyInkColor = () => {
     ctx.strokeStyle = document.documentElement.classList.contains('dark')
@@ -136,6 +138,7 @@ document.querySelectorAll('[data-signature-modal]').forEach((wrap) => {
     submitButton.disabled = false;
 
     const pos = getPos(event);
+    currentPath = `M${Math.round(pos.x)} ${Math.round(pos.y)}`;
     ctx.beginPath();
     ctx.moveTo(pos.x, pos.y);
 
@@ -146,6 +149,7 @@ document.querySelectorAll('[data-signature-modal]').forEach((wrap) => {
     if (!drawing) return;
 
     const pos = getPos(event);
+    currentPath += ` L${Math.round(pos.x)} ${Math.round(pos.y)}`;
     ctx.lineTo(pos.x, pos.y);
     ctx.stroke();
 
@@ -153,8 +157,15 @@ document.querySelectorAll('[data-signature-modal]').forEach((wrap) => {
   };
 
   const stop = () => {
+    if (drawing && currentPath) {
+      paths.push(currentPath);
+      currentPath = '';
+    }
+
     drawing = false;
-    input.value = hasDrawing ? canvas.toDataURL('image/png') : '';
+    input.value = hasDrawing
+      ? JSON.stringify({viewBox: '0 0 900 260', paths})
+      : '';
   };
 
   openButtons.forEach((button) => button.addEventListener('click', () => setOpen(true)));
@@ -174,6 +185,8 @@ document.querySelectorAll('[data-signature-modal]').forEach((wrap) => {
 
   const clearSignature = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    paths = [];
+    currentPath = '';
     hasDrawing = false;
     input.value = '';
     submitButton.disabled = true;
@@ -182,7 +195,7 @@ document.querySelectorAll('[data-signature-modal]').forEach((wrap) => {
   clearButton.addEventListener('click', clearSignature);
 
   wrap.querySelector('form')?.addEventListener('submit', () => {
-    input.value = canvas.toDataURL('image/png');
+    input.value = JSON.stringify({viewBox: '0 0 900 260', paths});
   });
 });
 

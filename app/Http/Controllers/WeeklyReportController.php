@@ -62,6 +62,7 @@ class WeeklyReportController extends Controller
         $report->number ??= $user->next_berichtsnummer;
         $report->status = WeekStatus::Submitted;
         $report->submittedAt = CarbonImmutable::now();
+        $report->submittedSignature = $this->signatureFromRequest($request);
 
         $this->reports->saveWeek($report, 'submit');
 
@@ -86,6 +87,7 @@ class WeeklyReportController extends Controller
         $report->signedAt     = CarbonImmutable::now();
         $report->signedById   = $request->user()->id;
         $report->signedByName = $request->user()->name;
+        $report->signedSignature = $this->signatureFromRequest($request);
 
         $this->reports->saveWeek($report, 'sign');
 
@@ -102,6 +104,27 @@ class WeeklyReportController extends Controller
 
     // ── internal ────────────────────────────────────────────────
 
+    private function signatureFromRequest(Request $request): array
+    {
+      $signature = json_decode((string) $request->input('signature'), true);
+
+      abort_unless(
+        is_array($signature)
+        && ($signature['viewBox'] ?? null) === '0 0 900 260'
+        && isset($signature['paths'])
+        && is_array($signature['paths'])
+        && count($signature['paths']) > 0,
+        422
+      );
+
+      return [
+        'viewBox' => '0 0 900 260',
+        'paths' => array_values(array_filter(
+          $signature['paths'],
+          fn ($path) => is_string($path) && preg_match('/^[ML0-9 .-]+$/', $path)
+        )),
+      ];
+    }
     private function weeksFor(User $viewer, int $year)
     {
         if ($viewer->isAusbilder()) {

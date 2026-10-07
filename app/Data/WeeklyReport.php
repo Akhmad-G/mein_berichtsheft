@@ -26,6 +26,8 @@ final class WeeklyReport
         public ?CarbonImmutable $signedAt = null,
         public ?int $signedById = null,
         public ?string $signedByName = null,
+        public ?array $submittedSignature = null,
+        public ?array $signedSignature = null,
         public ?string $summary = null,
         public bool $exists = false,
     ) {
@@ -48,6 +50,8 @@ final class WeeklyReport
             signedAt: $date($data['signed_at'] ?? null),
             signedById: $data['signed_by']['id'] ?? null,
             signedByName: $data['signed_by']['name'] ?? null,
+            submittedSignature: $data['submitted_signature'] ?? null,
+            signedSignature: $data['signed_signature'] ?? null,
             summary: $data['summary'] ?? null,
             exists: $data !== [],
         );
@@ -64,6 +68,8 @@ final class WeeklyReport
             'submitted_at' => $this->submittedAt?->toIso8601String(),
             'signed_at'    => $this->signedAt?->toIso8601String(),
             'signed_by'    => $this->signedById ? ['id' => $this->signedById, 'name' => $this->signedByName] : null,
+            'submitted_signature' => $this->submittedSignature,
+            'signed_signature'    => $this->signedSignature,
             'summary'      => $this->summary,
         ], fn ($v) => $v !== null);
     }
