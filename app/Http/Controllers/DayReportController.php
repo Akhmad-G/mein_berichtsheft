@@ -46,7 +46,7 @@ class DayReportController extends Controller
                 activities: $request->validated('activities'),
                 duration: $request->validated('duration'),
                 department: $request->validated('department'),
-                learningSteps: $request->validated('learning_steps') ?? [],
+                learningSteps: array_values(array_filter($request->validated('learning_steps') ?? [])),
             )
             : new DayReport(date: $d, type: $type, note: $request->validated('note')));
 

@@ -30,7 +30,7 @@ class DayReportRequest extends FormRequest
             'duration'         => [$work ? 'nullable' : 'exclude', 'string', 'max:20'],
             'department'       => [$work ? 'nullable' : 'exclude', 'string', 'max:255'],
             'learning_steps'   => [$work ? 'nullable' : 'exclude', 'array'],
-            'learning_steps.*' => ['string', 'max:50'],
+            'learning_steps.*' => ['nullable', 'string', 'max:50'],
 
             // absence
             'note'             => [$work ? 'exclude' : 'nullable', 'string', 'max:200'],

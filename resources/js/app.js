@@ -199,4 +199,41 @@ document.querySelectorAll('[data-signature-modal]').forEach((wrap) => {
   });
 });
 
+document.querySelectorAll('[data-learning-steps]').forEach((wrap) => {
+  const button = wrap.querySelector('[data-learning-steps-button]');
+  const panel = wrap.querySelector('[data-learning-steps-panel]');
+  const label = wrap.querySelector('[data-learning-steps-label]');
+  const checkboxes = wrap.querySelectorAll('[data-learning-steps-checkbox]');
+
+  if (!button || !panel || !label) return;
+
+  const updateLabel = () => {
+    const checked = [...checkboxes].filter((checkbox) => checkbox.checked).length;
+    label.textContent = checked ? `${checked} ausgewählt` : 'Bitte auswählen';
+  };
+
+  button.addEventListener('click', (event) => {
+    event.stopPropagation();
+    panel.hidden = !panel.hidden;
+  });
+
+  checkboxes.forEach((checkbox) => {
+    checkbox.addEventListener('change', updateLabel);
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!wrap.contains(event.target)) {
+      panel.hidden = true;
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      panel.hidden = true;
+    }
+  });
+
+  updateLabel();
+});
+
 Alpine.start();

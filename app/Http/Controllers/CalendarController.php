@@ -46,7 +46,7 @@ class CalendarController extends Controller {
       'week' => $week,            // App\Data\WeeklyReport with days
       'typeCount' => $typeCount,
       'canEdit' => $week->isEditable(),
-      'learningSteps' => config('reports.learning_steps', []),
+      'learningSteps' => config('reports.learning_steps_by_profession.' . $azubi->ausbildungsberuf, []),
       'today' => CarbonImmutable::today(),
     ]);
   }
