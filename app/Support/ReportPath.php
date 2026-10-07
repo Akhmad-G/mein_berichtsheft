@@ -16,7 +16,7 @@ use RuntimeException;
  */
 final class ReportPath
 {
-  public const WEEK_FILE = 'week.json';
+  public const WEEK_FILE = 'Wochenbericht.json';
 
   public static function yearFolder(User $azubi, int $year): string
   {
@@ -30,7 +30,7 @@ final class ReportPath
 
   public static function weekFile(User $azubi, int $year, int $week): string
   {
-    return self::weekFolder($azubi, $year, $week) . '/' . self::WEEK_FILE;
+    return self::weekFolder($azubi, $year, $week) . sprintf('/KW-%02d %s', $week, self::WEEK_FILE);
   }
 
   public static function dayFile(User $azubi, CarbonInterface $date): string
@@ -41,7 +41,7 @@ final class ReportPath
   /** ".../2026/KW-40/2026-09-28.json" → ['path', 'year', 'week', 'kind' => 'day'|'week', 'date'] */
   public static function parse(string $path): ?array
   {
-    if (! preg_match('#/(\d{4})/KW-(\d{2})/(week|\d{4}-\d{2}-\d{2})\.json$#', $path, $matches)) {
+    if (! preg_match('#/(\d{4})/KW-(\d{2})/(KW-\d{2} Wochenbericht|\d{4}-\d{2}-\d{2})\.json$#', $path, $matches)) {
       return null;
     }
 
@@ -49,8 +49,8 @@ final class ReportPath
       'path' => $path,
       'year' => (int) $matches[1],
       'week' => (int) $matches[2],
-      'kind' => $matches[3] === 'week' ? 'week' : 'day',
-      'date' => $matches[3] === 'week' ? null : $matches[3],
+      'kind' => str_ends_with($matches[3], 'Wochenbericht') ? 'week' : 'day',
+      'date' => str_ends_with($matches[3], 'Wochenbericht') ? null : $matches[3],
     ];
   }
 

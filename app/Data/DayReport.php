@@ -24,12 +24,12 @@ final class DayReport
     {
         return new self(
             date: $date,
-            type: DayType::tryFrom($data['type'] ?? '') ?? DayType::Work,
-            activities: $data['activities'] ?? null,
-            duration: $data['duration'] ?? null,
-            department: $data['department'] ?? null,
-            learningSteps: $data['learning_steps'] ?? [],
-            note: $data['note'] ?? null,
+            type: DayType::tryFrom($data['typ'] ?? '') ?? DayType::Work,
+            activities: $data['taetigkeiten'] ?? null,
+            duration: $data['dauer'] ?? null,
+            department: $data['abteilung'] ?? null,
+            learningSteps: $data['lernziele'] ?? [],
+            note: $data['notiz'] ?? null,
             exists: true,
         );
     }
@@ -37,13 +37,13 @@ final class DayReport
     public function toArray(): array
     {
         return array_filter([
-            'date'           => $this->date->toDateString(),
-            'type'           => $this->type->value,
-            'activities'     => $this->activities,
-            'duration'       => $this->duration,
-            'department'     => $this->department,
-            'learning_steps' => $this->learningSteps,
-            'note'           => $this->note,
+            'datum'         => $this->date->toDateString(),
+            'typ'           => $this->type->value,
+            'taetigkeiten'  => $this->activities,
+            'dauer'         => $this->duration,
+            'abteilung'     => $this->department,
+            'lernziele'     => $this->learningSteps,
+            'notiz'         => $this->note,
         ], fn ($v) => $v !== null && $v !== '' && $v !== []);
     }
 

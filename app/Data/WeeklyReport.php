@@ -44,15 +44,15 @@ final class WeeklyReport
             azubi: $azubi,
             year: $year,
             week: $week,
-            number: $data['number'] ?? null,
+            number: $data['berichtsnummer'] ?? null,
             status: WeekStatus::tryFrom($data['status'] ?? '') ?? WeekStatus::Draft,
-            submittedAt: $date($data['submitted_at'] ?? null),
-            signedAt: $date($data['signed_at'] ?? null),
-            signedById: $data['signed_by']['id'] ?? null,
-            signedByName: $data['signed_by']['name'] ?? null,
-            submittedSignature: $data['submitted_signature'] ?? null,
-            signedSignature: $data['signed_signature'] ?? null,
-            summary: $data['summary'] ?? null,
+            submittedAt: $date($data['eingereicht_am'] ?? null),
+            signedAt: $date($data['unterschrieben_am'] ?? null),
+            signedById: $data['unterschrieben_von']['id'] ?? null,
+            signedByName: $data['unterschrieben_von']['name'] ?? null,
+            submittedSignature: $data['azubi_unterschrift'] ?? null,
+            signedSignature: $data['ausbilder_unterschrift'] ?? null,
+            summary: $data['zusammenfassung'] ?? null,
             exists: $data !== [],
         );
     }
@@ -60,17 +60,17 @@ final class WeeklyReport
     public function toArray(): array
     {
         return array_filter([
-            'year'         => $this->year,
-            'week'         => $this->week,
-            'azubi'        => $this->azubi->name,
-            'number'       => $this->number,
-            'status'       => $this->status->value,
-            'submitted_at' => $this->submittedAt?->toIso8601String(),
-            'signed_at'    => $this->signedAt?->toIso8601String(),
-            'signed_by'    => $this->signedById ? ['id' => $this->signedById, 'name' => $this->signedByName] : null,
-            'submitted_signature' => $this->submittedSignature,
-            'signed_signature'    => $this->signedSignature,
-            'summary'      => $this->summary,
+            'jahr'                    => $this->year,
+            'kalenderwoche'           => $this->week,
+            'azubi'                   => $this->azubi->name,
+            'berichtsnummer'          => $this->number,
+            'status'                  => $this->status->value,
+            'eingereicht_am'          => $this->submittedAt?->toIso8601String(),
+            'unterschrieben_am'       => $this->signedAt?->toIso8601String(),
+            'unterschrieben_von'      => $this->signedById ? ['id' => $this->signedById, 'name' => $this->signedByName] : null,
+            'azubi_unterschrift'      => $this->submittedSignature,
+            'ausbilder_unterschrift'  => $this->signedSignature,
+            'zusammenfassung'         => $this->summary,
         ], fn ($v) => $v !== null);
     }
 
