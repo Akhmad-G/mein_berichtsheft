@@ -24,7 +24,7 @@ final class DayReport
     {
         return new self(
             date: $date,
-            type: DayType::tryFrom($data['typ'] ?? '') ?? DayType::Work,
+            type: DayType::fromStorageValue($data['typ'] ?? ''),
             activities: $data['taetigkeiten'] ?? null,
             duration: $data['dauer'] ?? null,
             department: $data['abteilung'] ?? null,
@@ -38,7 +38,7 @@ final class DayReport
     {
         return array_filter([
             'datum'         => $this->date->toDateString(),
-            'typ'           => $this->type->value,
+            'typ'           => $this->type->storageValue(),
             'taetigkeiten'  => $this->activities,
             'dauer'         => $this->duration,
             'abteilung'     => $this->department,

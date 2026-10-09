@@ -22,6 +22,29 @@ enum DayType: string
         };
     }
 
+    public function storageValue(): string
+    {
+      return match ($this) {
+        self::Work => 'arbeitstag',
+        self::School => 'schule',
+        self::Vacation => 'urlaub',
+        self::Sick => 'krank',
+        self::Holiday => 'feiertag',
+      };
+    }
+
+    public static function fromStorageValue(string $value): self
+    {
+      return match ($value) {
+        'arbeitstag', 'work' => self::Work,
+        'schule', 'school' => self::School,
+        'urlaub', 'vacation' => self::Vacation,
+        'krank', 'sick' => self::Sick,
+        'feiertag', 'holiday' => self::Holiday,
+        default => self::Work,
+      };
+    }
+
     public function isWork(): bool
     {
         return $this === self::Work;
