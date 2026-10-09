@@ -64,7 +64,7 @@
                     </x-slot:lead>
 
                     <x-slot:actions>
-                        <x-button variant="secondary" size="sm" :href="route('weekly-reports.print', $week->routeParams())">Drucken / PDF</x-button>
+                        <x-button variant="secondary" size="sm" :href="route('weekly-reports.pdf', $week->routeParams())">PDF ↓</x-button>
                         <x-weekly-report.sign-button :week="$week" />
                     </x-slot:actions>
                 </x-notebook.page-header>

@@ -79,7 +79,7 @@
             <canvas data-signature-pad
                     width="900"
                     height="260"
-                    class="block h-[180px] w-full cursor-crosshair rounded-md bg-paper"
+                    class="block aspect-[900/260] w-full cursor-crosshair rounded-md bg-paper"
             ></canvas>
           </div>
 

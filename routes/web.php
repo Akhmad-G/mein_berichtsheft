@@ -29,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
       Route::post('/{user}/{year}/{week}/submit', 'submit')->name('submit');
       Route::post('/{user}/{year}/{week}/sign', 'sign')->name('sign');
       Route::get('/{user}/{year}/{week}/print', 'print')->name('print');
+      Route::get('/{user}/{year}/{week}/pdf', 'pdf')->name('pdf');
     })
     ->whereNumber(['year', 'week']);
 

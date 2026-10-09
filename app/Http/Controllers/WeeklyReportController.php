@@ -9,6 +9,7 @@ use App\Repositories\ReportRepository;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class WeeklyReportController extends Controller
 {
@@ -95,11 +96,27 @@ class WeeklyReportController extends Controller
         return view('weekly-reports.print', ['week' => $this->reports->week($user, $year, $week)]);
     }
 
+    public function pdf(User $user, int $year, int $week)
+    {
+      $report = $this->reports->week($user, $year, $week);
+      Gate::authorize('view-reports', $user);
+
+      return Pdf::loadView('weekly-reports.pdf', ['week' => $report])
+        ->setPaper('a4')
+        ->download("Wochenbericht_KW{$week}_{$year}.pdf");
+    }
+
     // ── internal ────────────────────────────────────────────────
 
     private function signatureFromRequest(Request $request): array
     {
       $signature = json_decode((string) $request->input('signature'), true);
+
+      logger()->debug('Signature received', [
+        'raw' => $request->input('signature'),
+        'decoded' => $signature,
+        'paths_count' => is_array($signature['paths'] ?? null) ? count($signature['paths']) : null,
+      ]);
 
       abort_unless(
         is_array($signature)
