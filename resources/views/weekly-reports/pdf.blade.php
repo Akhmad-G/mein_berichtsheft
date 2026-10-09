@@ -63,9 +63,6 @@
 
     .signs { margin-top: 22px; page-break-inside: avoid; }
     .sign { border: 1px solid #CBB994; border-radius: 5px; padding: 10px 12px; }
-    .sign.ok { border-color: #3F5D42; background: #E1E8DC; }
-    .sign.ok .cap, .sign.ok .by { color: #3F5D42; }
-    .sign.ok .by { border-top-color: #3F5D42; }
     .hand { height: 58px; margin: 2px 0 4px; }
     .hand img { height: 58px; width: 201px; display: block; }
     .by { font-size: 9.5px; color: #5B6470; border-top: 1px solid #CBB994; padding-top: 5px; padding-bottom: 3px; min-height: 28px; }
@@ -159,17 +156,12 @@
 
 <table class="signs"><tr>
     <td style="width:50%;padding-right:9px;">
-        <div class="sign {{ $week->submittedAt ? 'ok' : '' }}">
+        <div class="sign">
             <div class="cap">Auszubildende/r</div>
             <div class="hand">
                 @if ($image = $signatureImage($week->submittedSignature))
                   <img src="{{ $image }}" alt="">
                 @endif
-{{--              @if ($week->submittedSignature)--}}
-{{--                <svg viewBox="{{ $week->submittedSignature['viewBox'] ?? '0 0 900 260' }}">--}}
-{{--                  {!! $signatureSvg($week->submittedSignature) !!}--}}
-{{--                </svg>--}}
-{{--              @endif--}}
             </div>
             <div class="by">
                 @if ($week->submittedAt)
@@ -181,17 +173,12 @@
         </div>
     </td>
     <td style="width:50%;padding-left:9px">
-        <div class="sign {{ $week->isSigned() ? 'ok' : '' }}">
+        <div class="sign">
             <div class="cap">Ausbilder/in</div>
             <div class="hand">
                 @if ($image = $signatureImage($week->signedSignature))
                   <img src="{{ $image }}" alt="">
                 @endif
-{{--              @if ($week->signedSignature)--}}
-{{--                <svg viewBox="{{ $week->signedSignature['viewBox'] ?? '0 0 900 260' }}">--}}
-{{--                  {!! $signatureSvg($week->signedSignature) !!}--}}
-{{--                </svg>--}}
-{{--              @endif--}}
             </div>
             <div class="by">
                 @if ($week->isSigned())
