@@ -37,7 +37,7 @@ class User extends Authenticatable {
       'role' => UserRole::class,];
   }
 
-  //?  No usages?
+  //?  No usages? What about: Http/Controllers/Auth/RegisteredUserController.php->store()
   public function assignGitLabPath(GitLabServiceInterface $gitLabService): void {
     if (!$this->isAzubi()) {
       return;
@@ -101,15 +101,6 @@ class User extends Authenticatable {
   public function isAusbilder(): bool {
     return $this->role === UserRole::Ausbilder;
   }
-//
-//
-//  public function nextBerichtsnummer(): int {
-//    $number = $this->next_berichtsnummer;
-//
-//    $this->increment('next_berichtsnummer');
-//
-//    return $number;
-//  }
 
 // TODO AusbildungsPeriod
   public function trainingPeriod(): ?string {

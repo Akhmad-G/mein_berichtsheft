@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder {
       ]);
 
       // Ein „benannter“ Azubi für einen vorhersehbaren Login
-      $akhmad = User::factory()->create([
+      $akhmed = User::factory()->create([
         'vorname' => 'Akhmed',
         'nachname' => 'Gazimagomedov',
         'email' => 'akhmed.gazimagomedov@artif.com',
@@ -32,31 +32,28 @@ class DatabaseSeeder extends Seeder {
         'ausbildungsbetrieb' => 'artif GmbH & Co. KG',
         'abteilung' => 'Backend',
         'ausbildungsbeginn' => '2026-09-01 00:00:00',
-        'gitlab_path' => "gazimagomedov-akhmed-3",
         'ausbilder_id' => $ausbilder->id,
       ]);
 
-      // 3 weitere zufällige Azubi
-      //      $azubis = User::factory(3)->create([
-      //        'ausbilder_id' => $ausbilder->id,
-      //      ]);
+      $akhmed->assignGitLabPath($gitLabService);
 
-      // gitlab_path + test Tagesbericht für alle Azubis
-      //      $azubis->push($akhmad)->each(function (User $user) use ($gitLabService) {
-      //        $user->assignGitlabPathIfMissing();
-      //
-      //        $filename = now()->format('Y-m-d') . ' Tagesbericht.json';
-      //
-      //        $gitLabService->saveReport($user, $filename, [
-      //          'date' => now()->format('Y-m-d'),
-      //          'wochentag' => now()->translatedFormat('l'),
-      //          'ausbildungsjahr' => 1,
-      //          'ausbildungswoche' => '1',
-      //          'taetigkeiten' => 'Seed-Beispiel für ' . $user->vorname,
-      //          'gelernt' => '',
-      //          'probleme' => '',
-      //        ]);
-      //      });
+      $fatih = User::factory()->create([
+        'vorname' => 'Fatih',
+        'nachname' => 'Ayyildiz',
+        'email' => 'fatih.ayyildiz@artif.com',
+        'email_verified_at' => now(),
+        'password' => 'GK76a^7Rs9\f',
+        'remember_token' => Str::random(10),
+        'ausbildungsberuf' => 'Fachinformatiker für Anwendungsentwicklung',
+        'ausbildungsbetrieb' => 'artif GmbH & Co. KG',
+        'abteilung' => 'Backend',
+        'ausbildungsbeginn' => '2026-09-01 00:00:00',
+        'ausbilder_id' => $ausbilder->id,
+      ]);
+
+      $fatih->assignGitLabPath($gitLabService);
+
+
     });
   }
 }

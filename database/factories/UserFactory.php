@@ -43,6 +43,10 @@ class UserFactory extends Factory {
     return $this->state(fn() => [
       'role' => UserRole::Ausbilder,
       'ausbilder_id' => null,
+      'ausbildungsberuf' => null,
+      'ausbildungsbetrieb' => null,
+      'abteilung' => null,
+      'ausbildungsbeginn' => null,
     ]);
   }
 
