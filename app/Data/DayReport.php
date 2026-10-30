@@ -5,9 +5,22 @@ namespace App\Data;
 use App\Enums\DayType;
 use Carbon\CarbonImmutable;
 
-/** One day file: {year}/KW-NN/YYYY-MM-DD.json */
+/**
+ * Data Transfer Object representing a daily training report.
+ * Stored as JSON: {year}/KW-{week}/{date}.json
+ */
 final class DayReport
 {
+    /**
+     * @param CarbonImmutable $date Date of the report entry.
+     * @param DayType $type Type of the day (work, school, vacation, sick, holiday).
+     * @param string|null $activities Description of executed work / training activities.
+     * @param string|null $duration Duration or hours spent on activities.
+     * @param string|null $department Department where work took place.
+     * @param array<int, string> $learningSteps List of learning objectives / steps covered.
+     * @param string|null $note Additional notes or comments.
+     * @param bool $exists Whether the report file exists in the repository.
+     */
     public function __construct(
         public readonly CarbonImmutable $date,
         public DayType $type = DayType::Work,
@@ -19,7 +32,13 @@ final class DayReport
         public bool $exists = false,
     ) {}
 
-    /** JSON keys → properties. If your existing files use other keys, map them here. */
+    /**
+     * Create a DayReport instance from parsed JSON storage data.
+     *
+     * @param array<string, mixed> $data Decoded JSON data from the storage file.
+     * @param CarbonImmutable $date The date corresponding to this report.
+     * @return self
+     */
     public static function fromArray(array $data, CarbonImmutable $date): self
     {
         return new self(
@@ -34,6 +53,11 @@ final class DayReport
         );
     }
 
+    /**
+     * Convert the DayReport instance into an array suitable for JSON storage.
+     *
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return array_filter([
@@ -47,12 +71,21 @@ final class DayReport
         ], fn ($v) => $v !== null && $v !== '' && $v !== []);
     }
 
+    /**
+     * Check if the report has non-empty activity content.
+     *
+     * @return bool
+     */
     public function hasContent(): bool
     {
         return filled($this->activities);
     }
 
-    /** Empty work day → no file in the repository. */
+    /**
+     * Determine if this is an empty work day that does not require repository storage.
+     *
+     * @return bool
+     */
     public function isEmpty(): bool
     {
         return $this->type->isWork()
@@ -61,16 +94,31 @@ final class DayReport
             && $this->learningSteps === [];
     }
 
+    /**
+     * Get the calendar cell state identifier for UI rendering.
+     *
+     * @return string
+     */
     public function calendarState(): string
     {
         return $this->type->calendarState($this->hasContent());
     }
 
+    /**
+     * Get the stamp indicator status string.
+     *
+     * @return string
+     */
     public function stamp(): string
     {
         return $this->type->stamp($this->hasContent());
     }
 
+    /**
+     * Get the human-readable status label in German.
+     *
+     * @return string
+     */
     public function statusLabel(): string
     {
         return $this->type->isWork()

@@ -4,14 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Repositories\ReportRepository;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 
-/** Ausbildungsnachweis: cover + all signed weeks, printable (PDF via browser print dialog). */
+/**
+ * Controller for generating the full printable training record (Ausbildungsnachweis).
+ */
 class TrainingRecordController extends Controller
 {
+    /**
+     * @param ReportRepository $reports
+     */
     public function __construct(private ReportRepository $reports) {}
 
-    public function print(User $user)
+    /**
+     * Render the complete printable record with cover page and all signed weekly reports.
+     *
+     * @param User $user The apprentice whose training record is to be printed.
+     * @return View
+     */
+    public function print(User $user): View
     {
         Gate::authorize('view-reports', $user);
 

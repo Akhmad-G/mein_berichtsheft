@@ -7,16 +7,34 @@ use App\Enums\WeekStatus;
 use App\Models\User;
 use App\Repositories\ReportRepository;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Barryvdh\DomPDF\Facade\Pdf;
 
+/**
+ * Controller for managing weekly reports workflow (browsing, submitting, signing, and exporting).
+ */
 class WeeklyReportController extends Controller
 {
+    /**
+     * @param ReportRepository $reports
+     */
     public function __construct(private ReportRepository $reports) {}
 
-    /** List + selected week. Without route params: current week (Azubi) / oldest waiting (Ausbilder). */
-    public function index(Request $request, ?User $user = null, ?int $year = null, ?int $week = null)
+    /**
+     * Display weekly reports list and the selected weekly report details.
+     *
+     * @param Request $request
+     * @param User|null $user
+     * @param int|null $year
+     * @param int|null $week
+     * @return View
+     */
+    public function index(Request $request, ?User $user = null, ?int $year = null, ?int $week = null): View
     {
         $viewer = $request->user();
         $year ??= (int) $request->query('year', now()->isoWeekYear());
@@ -48,7 +66,16 @@ class WeeklyReportController extends Controller
         ]);
     }
 
-    public function submit(Request $request, User $user, int $year, int $week)
+    /**
+     * Submit a completed weekly report for trainer signature.
+     *
+     * @param Request $request
+     * @param User $user
+     * @param int $year
+     * @param int $week
+     * @return RedirectResponse
+     */
+    public function submit(Request $request, User $user, int $year, int $week): RedirectResponse
     {
         Gate::authorize('edit-reports', $user);
 
@@ -76,7 +103,16 @@ class WeeklyReportController extends Controller
         return back()->with('status', "KW {$week} ist zur Unterschrift gegeben.");
     }
 
-    public function sign(Request $request, User $user, int $year, int $week)
+    /**
+     * Sign and approve a submitted weekly report (Ausbilder only).
+     *
+     * @param Request $request
+     * @param User $user
+     * @param int $year
+     * @param int $week
+     * @return RedirectResponse
+     */
+    public function sign(Request $request, User $user, int $year, int $week): RedirectResponse
     {
         Gate::authorize('sign-reports', $user);
 
@@ -97,15 +133,30 @@ class WeeklyReportController extends Controller
         return back()->with('status', "KW {$week} unterschrieben.");
     }
 
-    /** Print sheet; PDF via the browser print dialog ("Als PDF speichern"). */
-    public function print(User $user, int $year, int $week)
+    /**
+     * Render the single weekly report print sheet for browser printing.
+     *
+     * @param User $user
+     * @param int $year
+     * @param int $week
+     * @return View
+     */
+    public function print(User $user, int $year, int $week): View
     {
         Gate::authorize('view-reports', $user);
 
         return view('weekly-reports.print', ['week' => $this->reports->week($user, $year, $week)]);
     }
 
-    public function pdf(User $user, int $year, int $week)
+    /**
+     * Generate and download a PDF document of the weekly report.
+     *
+     * @param User $user
+     * @param int $year
+     * @param int $week
+     * @return Response
+     */
+    public function pdf(User $user, int $year, int $week): Response
     {
       $report = $this->reports->week($user, $year, $week);
       Gate::authorize('view-reports', $user);
@@ -117,6 +168,12 @@ class WeeklyReportController extends Controller
 
     // ── internal ────────────────────────────────────────────────
 
+    /**
+     * Extract and validate vector signature data from the incoming request.
+     *
+     * @param Request $request
+     * @return array{viewBox: string, paths: array<int, string>}
+     */
     private function signatureFromRequest(Request $request): array
     {
       $signature = json_decode((string) $request->input('signature'), true);
@@ -144,7 +201,15 @@ class WeeklyReportController extends Controller
         )),
       ];
     }
-    private function weeksFor(User $viewer, int $year)
+
+    /**
+     * Load list of weekly reports relevant for the given viewer (Azubi vs Ausbilder).
+     *
+     * @param User $viewer
+     * @param int $year
+     * @return Collection<int, WeeklyReport>
+     */
+    private function weeksFor(User $viewer, int $year): Collection
     {
         if ($viewer->isAusbilder()) {
             return $viewer->azubis()->whereNotNull('gitlab_path')->orderBy('nachname')->get()

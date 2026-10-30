@@ -11,9 +11,14 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * Main application service provider registering core services, view composers, and authorization gates.
+ */
 class AppServiceProvider extends ServiceProvider {
   /**
    * Register any application services.
+   *
+   * @return void
    */
   public function register(): void {
     $this->app->bind(GitLabServiceInterface::class, GitLabService::class);
@@ -21,7 +26,9 @@ class AppServiceProvider extends ServiceProvider {
   }
 
   /**
-   * Bootstrap any application services.
+   * Bootstrap any application services, view composers, and gates.
+   *
+   * @return void
    */
   public function boot(): void {
     View::composer(['calendar.index', 'weekly-reports.index', 'azubis.index'], TabsComposer::class);

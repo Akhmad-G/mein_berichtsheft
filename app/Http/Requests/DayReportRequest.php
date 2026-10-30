@@ -8,15 +8,31 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
+/**
+ * Form request for creating, updating, or range-filling daily training reports.
+ */
 class DayReportRequest extends FormRequest
 {
+    /**
+     * Maximum allowed date range in days for bulk entries (e.g. 2 months).
+     */
     private const MAX_RANGE_DAYS = 62;
 
+    /**
+     * Determine if the user is authorized to make this request (Azubis only).
+     *
+     * @return bool
+     */
     public function authorize(): bool
     {
         return $this->user()->isAzubi();
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         $work  = $this->input('type') === DayType::Work->value;
@@ -40,6 +56,11 @@ class DayReportRequest extends FormRequest
         ];
     }
 
+    /**
+     * Configure the "after" validation callbacks.
+     *
+     * @return array<int, callable>
+     */
     public function after(): array
     {
         return [function (Validator $validator) {
@@ -52,6 +73,11 @@ class DayReportRequest extends FormRequest
         }];
     }
 
+    /**
+     * Custom validation error messages.
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [

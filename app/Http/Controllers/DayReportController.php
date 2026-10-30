@@ -8,12 +8,26 @@ use App\Http\Requests\DayReportRequest;
 use App\Repositories\ReportRepository;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
+use Illuminate\Http\RedirectResponse;
 
+/**
+ * Controller for updating or bulk-assigning daily training report entries.
+ */
 class DayReportController extends Controller
 {
+    /**
+     * @param ReportRepository $reports
+     */
     public function __construct(private ReportRepository $reports) {}
 
-    public function update(DayReportRequest $request, string $date)
+    /**
+     * Update a daily report entry or populate a date range for vacation/school/sick/holiday.
+     *
+     * @param DayReportRequest $request
+     * @param string $date Date string in 'YYYY-MM-DD' format.
+     * @return RedirectResponse
+     */
+    public function update(DayReportRequest $request, string $date): RedirectResponse
     {
         $azubi = $request->user();
         $date  = CarbonImmutable::createFromFormat('!Y-m-d', $date);

@@ -5,12 +5,25 @@ namespace App\Http\Controllers;
 use App\Repositories\ReportRepository;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
+/**
+ * Controller for rendering the interactive monthly calendar view for apprentices.
+ */
 class CalendarController extends Controller {
+  /**
+   * @param ReportRepository $reports
+   */
   public function __construct(private ReportRepository $reports) {}
 
-  public function index(Request $request) {
+  /**
+   * Display the calendar overview for the selected date or current month.
+   *
+   * @param Request $request
+   * @return View
+   */
+  public function index(Request $request): View {
     $azubi = $request->user();
     abort_unless($azubi->isAzubi(), 403); // Ausbilder has no calendar
 

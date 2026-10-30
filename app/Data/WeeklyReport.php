@@ -7,15 +7,41 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
-/** {year}/KW-NN/week.json + the days of that week. */
+/**
+ * Data Transfer Object representing a weekly training report and its collection of days.
+ * Stored as JSON: {year}/KW-{week}/KW-{week} Wochenbericht.json
+ */
 final class WeeklyReport
 {
-    /** @var Collection<string, DayReport> Mon–Fri, keyed Y-m-d (empty in list mode) */
+    /**
+     * Daily reports collection for the week (Monday to Friday), keyed by 'YYYY-MM-DD'.
+     *
+     * @var Collection<string, DayReport>
+     */
     public Collection $days;
 
-    /** Number of day files in the folder. */
+    /**
+     * Number of day files present in the week folder.
+     *
+     * @var int
+     */
     public int $recordedDays = 0;
 
+    /**
+     * @param User $azubi The apprentice to whom this report belongs.
+     * @param int $year ISO calendar year.
+     * @param int $week ISO calendar week number (1-53).
+     * @param int|null $number Consecutive report number (Berichtsnummer).
+     * @param WeekStatus $status Current review / approval status.
+     * @param CarbonImmutable|null $submittedAt Timestamp when the report was submitted by apprentice.
+     * @param CarbonImmutable|null $signedAt Timestamp when the report was approved / signed by trainer.
+     * @param int|null $signedById User ID of trainer who signed.
+     * @param string|null $signedByName Full name of trainer who signed.
+     * @param array<string, mixed>|null $submittedSignature Digital signature data of the apprentice.
+     * @param array<string, mixed>|null $signedSignature Digital signature data of the trainer.
+     * @param string|null $summary Summary or review note for the week.
+     * @param bool $exists Whether the weekly report file exists in storage.
+     */
     public function __construct(
         public readonly User $azubi,
         public readonly int $year,
@@ -34,7 +60,15 @@ final class WeeklyReport
         $this->days = collect();
     }
 
-    /** JSON keys → properties. If your existing weekly files use other keys, map them here. */
+    /**
+     * Create a WeeklyReport instance from storage array data.
+     *
+     * @param User $azubi
+     * @param int $year
+     * @param int $week
+     * @param array<string, mixed>|null $data
+     * @return self
+     */
     public static function fromArray(User $azubi, int $year, int $week, ?array $data): self
     {
         $data ??= [];
@@ -57,6 +91,11 @@ final class WeeklyReport
         );
     }
 
+    /**
+     * Convert the weekly report into an array suitable for JSON persistence.
+     *
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return array_filter([
@@ -74,22 +113,42 @@ final class WeeklyReport
         ], fn ($v) => $v !== null);
     }
 
+    /**
+     * Get the start date (Monday) of the week.
+     *
+     * @return CarbonImmutable
+     */
     public function start(): CarbonImmutable
     {
         return CarbonImmutable::now()->setISODate($this->year, $this->week)->startOfDay();
     }
 
+    /**
+     * Get the end date (Friday) of the work week.
+     *
+     * @return CarbonImmutable
+     */
     public function end(): CarbonImmutable
     {
         return $this->start()->addDays(4);
     }
 
-    /** "22.09. – 26.09.2026" */
+    /**
+     * Formatted date range string for UI display (e.g., "22.09. – 26.09.2026").
+     *
+     * @return string
+     */
     public function period(): string
     {
         return $this->start()->format('d.m.') . ' – ' . $this->end()->format('d.m.Y');
     }
 
+    /**
+     * Check if another report instance represents the same apprentice, year, and week.
+     *
+     * @param self|null $other
+     * @return bool
+     */
     public function is(?self $other): bool
     {
         return $other !== null
@@ -98,22 +157,41 @@ final class WeeklyReport
             && $other->week === $this->week;
     }
 
+    /**
+     * Check if the weekly report can currently be edited by the apprentice.
+     *
+     * @return bool
+     */
     public function isEditable(): bool
     {
         return $this->status === WeekStatus::Draft;
     }
 
+    /**
+     * Check if the weekly report has already been signed by a trainer.
+     *
+     * @return bool
+     */
     public function isSigned(): bool
     {
         return $this->status === WeekStatus::Signed;
     }
 
+    /**
+     * Determine whether the report satisfies requirements for submission (draft state & 5 recorded days).
+     *
+     * @return bool
+     */
     public function canSubmit(): bool
     {
         return $this->isEditable() && $this->recordedDays >= 5;
     }
 
-    /** For route('weekly-reports.show', $week->routeParams()) */
+    /**
+     * Generate route parameters array for linking to this report.
+     *
+     * @return array{user: User, year: int, week: int}
+     */
     public function routeParams(): array
     {
         return ['user' => $this->azubi, 'year' => $this->year, 'week' => $this->week];

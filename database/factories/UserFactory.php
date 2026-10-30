@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
+ * Model factory for generating User instances.
+ *
  * @extends Factory<User>
  */
 class UserFactory extends Factory {
@@ -18,7 +20,7 @@ class UserFactory extends Factory {
   protected static ?string $password;
 
   /**
-   * Define the model's default state.
+   * Define the model's default state (Azubi).
    *
    * @return array<string, mixed>
    */
@@ -39,6 +41,11 @@ class UserFactory extends Factory {
     ];
   }
 
+  /**
+   * Indicate that the user is a trainer (Ausbilder).
+   *
+   * @return static
+   */
   public function ausbilder(): static {
     return $this->state(fn() => [
       'role' => UserRole::Ausbilder,
@@ -52,6 +59,8 @@ class UserFactory extends Factory {
 
   /**
    * Indicate that the model's email address should be unverified.
+   *
+   * @return static
    */
   public function unverified(): static {
     return $this->state(fn(array $attributes) => [

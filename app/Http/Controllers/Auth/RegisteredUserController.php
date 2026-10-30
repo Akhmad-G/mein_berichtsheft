@@ -15,16 +15,25 @@ use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Controller for handling new apprentice user registration.
+ */
 class RegisteredUserController extends Controller {
   /**
    * Display the registration view.
+   *
+   * @return View
    */
   public function create(): View {
     return view('auth.register');
   }
 
   /**
-   * Handle an incoming registration request.
+   * Handle an incoming registration request and setup GitLab path.
+   *
+   * @param Request $request
+   * @param GitLabServiceInterface $gitLabService
+   * @return RedirectResponse
    *
    * @throws ValidationException
    */

@@ -5,15 +5,28 @@ namespace App\Http\Controllers;
 use App\Enums\WeekStatus;
 use App\Models\User;
 use App\Repositories\ReportRepository;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
-/** "Meine Azubis" — Ausbilder only. */
+/**
+ * Controller for managing and reviewing apprentice overviews (Ausbilder only).
+ */
 class AzubiController extends Controller
 {
+    /**
+     * @param ReportRepository $reports
+     */
     public function __construct(private ReportRepository $reports) {}
 
-    public function index(Request $request, ?User $user = null)
+    /**
+     * Display the apprentice overview and review dashboard.
+     *
+     * @param Request $request
+     * @param User|null $user Selected apprentice to display details for.
+     * @return View
+     */
+    public function index(Request $request, ?User $user = null): View
     {
         $viewer = $request->user();
         abort_unless($viewer->isAusbilder(), 403);

@@ -3,26 +3,51 @@
 namespace App\Contracts;
 
 /**
- * Low-level access to the reports repository.
- * Knows nothing about days/weeks — folder layout lives in App\Support\ReportPath,
- * domain logic in App\Repositories\ReportRepository.
+ * Interface for low-level interaction with the GitLab reports repository.
+ *
+ * Provides repository operations (tree listing, blob/file reading, and atomic commits)
+ * without domain knowledge of report structures.
  */
 interface GitLabServiceInterface {
-  /** Does a (non-empty) folder exist? */
+  /**
+   * Determine whether a folder or path exists (non-empty) in the repository.
+   *
+   * @param string $path
+   * @return bool
+   */
   public function pathExists(string $path): bool;
 
-  /** Tree entries under $path: [['id' => sha, 'name', 'path', 'type' => 'blob'|'tree'], …]. Missing path → []. */
+  /**
+   * List tree entries under the given repository path.
+   *
+   * @param string $path
+   * @param bool $recursive
+   * @return array<int, array{id: string, name: string, path: string, type: 'blob'|'tree'}>
+   */
   public function listTree(string $path, bool $recursive = false): array;
 
-  /** Decoded JSON of a blob by sha. Blobs are immutable → cached forever. */
+  /**
+   * Read and decode JSON content of a repository blob by its SHA identifier.
+   *
+   * @param string $sha
+   * @return array<string, mixed>|null
+   */
   public function readBlob(string $sha): ?array;
 
-  /** Decoded JSON of a file by path, null if it does not exist. */
+  /**
+   * Read and decode JSON content of a file located at the specified path.
+   *
+   * @param string $path
+   * @return array<string, mixed>|null
+   */
   public function readFile(string $path): ?array;
 
   /**
-   * One commit with several actions.
-   * Action: ['action' => 'create'|'update'|'delete'|'move', 'file_path' => …, 'content' => …, 'previous_path' => …]
+   * Perform an atomic multi-file commit in the repository.
+   *
+   * @param string $message Commit message.
+   * @param array<int, array{action: 'create'|'update'|'delete'|'move', file_path: string, content?: string, previous_path?: string}> $actions List of commit actions.
+   * @return void
    */
   public function commit(string $message, array $actions): void;
 }

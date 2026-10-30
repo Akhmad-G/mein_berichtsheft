@@ -8,13 +8,25 @@ use Carbon\CarbonImmutable;
 use Illuminate\View\View;
 
 /**
- * $tabs for <x-notebook.tabs>. The role decides the tabs:
- * Azubi — Kalender + Wochenberichte, Ausbilder — Wochenberichte + Meine Azubis.
+ * View composer providing navigation tab configurations and badge counters based on user role.
+ *
+ * Tab sets:
+ * - Azubi: Calendar ('Kalender') + Weekly Reports ('Wochenberichte')
+ * - Ausbilder: Weekly Reports ('Wochenberichte') + Apprentices Overview ('Meine Azubis')
  */
 class TabsComposer
 {
+    /**
+     * @param ReportRepository $reports
+     */
     public function __construct(private ReportRepository $reports) {}
 
+    /**
+     * Bind tab navigation data and dynamic status badges to the view.
+     *
+     * @param View $view
+     * @return void
+     */
     public function compose(View $view): void
     {
         $user = auth()->user();

@@ -9,9 +9,14 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Controller for requesting password reset links.
+ */
 class PasswordResetLinkController extends Controller {
   /**
    * Display the password reset link request view.
+   *
+   * @return View
    */
   public function create(): View {
     return view('auth.forgot-password');
@@ -19,6 +24,9 @@ class PasswordResetLinkController extends Controller {
 
   /**
    * Handle an incoming password reset link request.
+   *
+   * @param Request $request
+   * @return RedirectResponse
    *
    * @throws ValidationException
    */

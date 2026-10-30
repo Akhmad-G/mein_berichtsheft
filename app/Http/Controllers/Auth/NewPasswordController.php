@@ -14,9 +14,15 @@ use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Controller for handling password reset form and new password saving.
+ */
 class NewPasswordController extends Controller {
   /**
    * Display the password reset view.
+   *
+   * @param Request $request
+   * @return View
    */
   public function create(Request $request): View {
     return view('auth.reset-password', ['request' => $request]);
@@ -24,6 +30,9 @@ class NewPasswordController extends Controller {
 
   /**
    * Handle an incoming new password request.
+   *
+   * @param Request $request
+   * @return RedirectResponse
    *
    * @throws ValidationException
    */

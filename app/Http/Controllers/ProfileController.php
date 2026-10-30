@@ -3,14 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\ReportRepository;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
-/** Profile page: personal data (left) + cover sheet of the training record (right). */
+/**
+ * Controller for displaying the user profile and training record cover sheet.
+ */
 class ProfileController extends Controller {
+  /**
+   * @param ReportRepository $reports
+   */
   public function __construct(private ReportRepository $reports) {
   }
 
-  public function show(Request $request) {
+  /**
+   * Display the profile page with user details and training overview stats.
+   *
+   * @param Request $request
+   * @return View
+   */
+  public function show(Request $request): View {
     $viewer = $request->user();
 
     if ($viewer->isAusbilder()) {

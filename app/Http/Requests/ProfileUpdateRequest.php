@@ -7,6 +7,9 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * Form request for validating profile updates.
+ */
 class ProfileUpdateRequest extends FormRequest
 {
     /**

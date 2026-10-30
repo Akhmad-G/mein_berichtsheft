@@ -13,16 +13,32 @@ use Carbon\CarbonPeriod;
 use Illuminate\Support\Collection;
 
 /**
- * Reads/writes day and weekly reports in GitLab.
- * Register as scoped (one instance per request) — the tree listing is memoized.
+ * Repository for reading and persisting daily and weekly training reports in GitLab.
+ *
+ * Designed to be registered as scoped (one instance per request lifecycle)
+ * to benefit from memoized repository tree listings.
  */
 class ReportRepository
 {
-    /** @var array<string, array<string, string>> year folder → [path => sha] */
+    /**
+     * Memoized file trees indexed by year folder path.
+     *
+     * @var array<string, array<string, string>> year folder path => [file_path => blob_sha]
+     */
     private array $trees = [];
 
+    /**
+     * @param GitLabServiceInterface $gitlab
+     */
     public function __construct(private GitLabServiceInterface $gitlab) {}
 
+    /**
+     * Retrieve a daily report for an apprentice on a specific date.
+     *
+     * @param User $azubi
+     * @param CarbonInterface $date
+     * @return DayReport
+     */
     public function day(User $azubi, CarbonInterface $date): DayReport
     {
         $date = CarbonImmutable::instance($date)->startOfDay();
@@ -31,7 +47,14 @@ class ReportRepository
         return $data ? DayReport::fromArray($data, $date) : new DayReport($date);
     }
 
-    /** @return Collection<string, DayReport> Mon–Fri between $from and $to, keyed Y-m-d */
+    /**
+     * Retrieve all weekday (Mon–Fri) reports between two dates for an apprentice.
+     *
+     * @param User $azubi
+     * @param CarbonInterface $from
+     * @param CarbonInterface $to
+     * @return Collection<string, DayReport> Keyed by 'YYYY-MM-DD'
+     */
     public function days(User $azubi, CarbonInterface $from, CarbonInterface $to): Collection
     {
         return collect(CarbonPeriod::create($from, $to))
@@ -39,6 +62,15 @@ class ReportRepository
             ->mapWithKeys(fn ($d) => [$d->toDateString() => $this->day($azubi, $d)]);
     }
 
+    /**
+     * Retrieve a weekly report for an apprentice by year and week number.
+     *
+     * @param User $azubi
+     * @param int $year
+     * @param int $week
+     * @param bool $withDays Whether to load full day reports or just count files.
+     * @return WeeklyReport
+     */
     public function week(User $azubi, int $year, int $week, bool $withDays = true): WeeklyReport
     {
         $report = WeeklyReport::fromArray($azubi, $year, $week, $this->read($azubi, $year, ReportPath::weekFile($azubi, $year, $week)));
@@ -56,7 +88,13 @@ class ReportRepository
         return $report;
     }
 
-    /** @return Collection<int, WeeklyReport> weeks of a year, newest first — week.json + day count, no day contents */
+    /**
+     * Retrieve all weekly reports for a specific year, sorted newest week first.
+     *
+     * @param User $azubi
+     * @param int $year
+     * @return Collection<int, WeeklyReport>
+     */
     public function weeks(User $azubi, int $year): Collection
     {
         return collect($this->files($azubi, $year))->keys()
@@ -74,7 +112,12 @@ class ReportRepository
             ->values();
     }
 
-    /** @return Collection<int, WeeklyReport> all weeks since the start of training, newest first */
+    /**
+     * Retrieve all weekly reports since the beginning of training up to current year.
+     *
+     * @param User $azubi
+     * @return Collection<int, WeeklyReport>
+     */
     public function allWeeks(User $azubi): Collection
     {
         $to   = now()->isoWeekYear();
@@ -83,7 +126,14 @@ class ReportRepository
         return collect(range($to, $from))->flatMap(fn (int $year) => $this->weeks($azubi, $year))->values();
     }
 
-    /** One commit for all days (a vacation range can span several weeks). Empty work days are deleted. */
+    /**
+     * Atomically save a collection of day reports in a single commit.
+     * Empty work days are automatically removed from storage.
+     *
+     * @param User $azubi
+     * @param Collection<int|string, DayReport> $days
+     * @return void
+     */
     public function saveDays(User $azubi, Collection $days): void
     {
         $actions = $days->map(function (DayReport $day) use ($azubi) {
@@ -103,6 +153,13 @@ class ReportRepository
         $days->map(fn (DayReport $d) => $d->date->isoWeekYear())->unique()->each(fn ($y) => $this->forget($azubi, $y));
     }
 
+    /**
+     * Save/update a weekly report status summary file in GitLab.
+     *
+     * @param WeeklyReport $week
+     * @param string $action Action label for commit message (e.g. 'submit', 'sign').
+     * @return void
+     */
     public function saveWeek(WeeklyReport $week, string $action): void
     {
         $path   = ReportPath::weekFile($week->azubi, $week->year, $week->week);
@@ -118,7 +175,13 @@ class ReportRepository
 
     // ── internal ────────────────────────────────────────────────
 
-    /** @return array<string, string> path => sha of all files in a year folder */
+    /**
+     * Fetch and cache mapping of file paths to blob SHAs for a given year.
+     *
+     * @param User $azubi
+     * @param int $year
+     * @return array<string, string> path => sha of all files in a year folder
+     */
     private function files(User $azubi, int $year): array
     {
         $folder = ReportPath::yearFolder($azubi, $year);
@@ -129,6 +192,14 @@ class ReportRepository
             ->all();
     }
 
+    /**
+     * Read JSON content of a file by path using the memoized tree sha.
+     *
+     * @param User $azubi
+     * @param int $year
+     * @param string $path
+     * @return array<string, mixed>|null
+     */
     private function read(User $azubi, int $year, string $path): ?array
     {
         $sha = $this->files($azubi, $year)[$path] ?? null;
@@ -136,11 +207,24 @@ class ReportRepository
         return $sha ? $this->gitlab->readBlob($sha) : null;
     }
 
+    /**
+     * Invalidate memoized tree cache for a year folder.
+     *
+     * @param User $azubi
+     * @param int $year
+     * @return void
+     */
     private function forget(User $azubi, int $year): void
     {
         unset($this->trees[ReportPath::yearFolder($azubi, $year)]);
     }
 
+    /**
+     * Encode data array into formatted JSON string with trailing newline.
+     *
+     * @param array<string, mixed> $data
+     * @return string
+     */
     private function json(array $data): string
     {
         return json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n";
