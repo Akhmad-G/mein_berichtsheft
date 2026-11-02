@@ -1,37 +1,44 @@
-<x-guest-layout>
-  <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-    {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
-  </div>
+<x-layouts.auth title="E-Mail bestätigen">
 
-  @if (session('status') == 'verification-link-sent')
-    <div class="mb-4 font-medium text-sm text-green-600 dark:text-green-400">
-      {{ __('A new verification link has been sent to the email address you provided during registration.') }}
-    </div>
-  @endif
+  <div class="border border-rule rounded-xl overflow-hidden bg-paper shadow-[0_18px_40px_-26px_rgba(32,38,44,.28)] max-w-xl mx-auto">
 
-  <div class="mt-4 flex items-center justify-between">
-    <form method="POST"
-          action="{{ route('verification.send') }}"
-    >
-      @csrf
+    <x-auth.header current="verify-email" />
 
+    <div class="p-7 sm:p-8 flex flex-col gap-5">
       <div>
-        <x-primary-button>
-          {{ __('Resend Verification Email') }}
-        </x-primary-button>
+        <div class="w-9 h-0.5 bg-stamp mb-4"></div>
+        <h1 class="font-display text-[22px]">E-Mail-Adresse bestätigen</h1>
+        <p class="mt-2 text-[14px] leading-relaxed text-ink-soft">
+          Vielen Dank für deine Registrierung! Bevor es losgeht: Klicke bitte auf den Bestätigungslink, den wir dir per E-Mail geschickt haben. Falls du keine E-Mail erhalten hast, senden wir dir gerne eine neue.
+        </p>
       </div>
-    </form>
 
-    <form method="POST"
-          action="{{ route('logout') }}"
-    >
-      @csrf
+      @if (session('status') == 'verification-link-sent')
+        <div class="border border-signed bg-signed-soft text-signed rounded-md px-3.5 py-3 text-[13.5px] leading-normal">
+          Ein neuer Bestätigungslink wurde an deine angegebene E-Mail-Adresse gesendet.
+        </div>
+      @endif
 
-      <button type="submit"
-              class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
-      >
-        {{ __('Log Out') }}
-      </button>
-    </form>
+      <div class="flex flex-wrap items-center justify-between gap-4 pt-2">
+        <form method="POST"
+              action="{{ route('verification.send') }}"
+        >
+          @csrf
+          <x-button>Bestätigungs-Link erneut senden</x-button>
+        </form>
+
+        <form method="POST"
+              action="{{ route('logout') }}"
+        >
+          @csrf
+          <button type="submit"
+                  class="text-[13px] text-ink-soft hover:text-ink underline decoration-rule underline-offset-4"
+          >
+            Abmelden
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
-</x-guest-layout>
+
+</x-layouts.auth>

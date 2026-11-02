@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Repositories\ReportRepository;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Controller for displaying the user profile and training record cover sheet.
@@ -58,5 +60,28 @@ class ProfileController extends Controller {
       'azubis' => $azubis,       // Ausbilder only, for the switcher
       'signedWeeks' => $signedWeeks,
     ]);
+  }
+
+  /**
+   * Delete the user's account.
+   *
+   * @param Request $request
+   * @return RedirectResponse
+   */
+  public function destroy(Request $request): RedirectResponse {
+    $request->validateWithBag('userDeletion', [
+      'password' => ['required', 'current_password'],
+    ]);
+
+    $user = $request->user();
+
+    Auth::logout();
+
+    $user->delete();
+
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect()->to('/');
   }
 }

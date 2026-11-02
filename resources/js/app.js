@@ -236,4 +236,29 @@ document.querySelectorAll('[data-learning-steps]').forEach((wrap) => {
   updateLabel();
 });
 
+document.querySelectorAll('[data-modal]').forEach((wrap) => {
+  const openButtons = wrap.querySelectorAll('[data-modal-open]');
+  const closeButtons = wrap.querySelectorAll('[data-modal-close]');
+  const backdrop = wrap.querySelector('[data-modal-backdrop]');
+
+  if (!backdrop) return;
+
+  const setOpen = (open) => {
+    backdrop.hidden = !open;
+  };
+
+  openButtons.forEach((button) => button.addEventListener('click', () => setOpen(true)));
+  closeButtons.forEach((button) => button.addEventListener('click', () => setOpen(false)));
+
+  backdrop.addEventListener('click', (event) => {
+    if (event.target === backdrop) setOpen(false);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !backdrop.hidden) {
+      setOpen(false);
+    }
+  });
+});
+
 Alpine.start();

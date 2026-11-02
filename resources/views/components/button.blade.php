@@ -4,6 +4,7 @@
     $variants = [
         'primary'   => 'bg-ink text-paper hover:opacity-90',
         'secondary' => 'border border-rule text-ink hover:bg-paper-raised',
+        'danger'    => 'bg-stamp text-paper hover:opacity-90',
     ];
 
     $sizes = [
@@ -11,8 +12,11 @@
         'md' => 'px-5 py-3 text-[15px]',      // Formular-CTA — wie der Hero-Button
     ];
 
+    $variantClass = $variants[$variant] ?? $variants['primary'];
+    $sizeClass = $sizes[$size] ?? $sizes['md'];
+
     $base = 'inline-flex items-center justify-center gap-2 rounded-md font-medium no-underline transition-colors '
-          . $variants[$variant] . ' ' . $sizes[$size];
+          . $variantClass . ' ' . $sizeClass;
 @endphp
 
 @if ($href)

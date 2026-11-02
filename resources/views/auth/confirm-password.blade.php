@@ -1,36 +1,38 @@
-<x-guest-layout>
-  <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-    {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
+<x-layouts.auth title="Passwort bestätigen">
+
+  <div class="border border-rule rounded-xl overflow-hidden bg-paper shadow-[0_18px_40px_-26px_rgba(32,38,44,.28)] max-w-xl mx-auto">
+
+    <x-auth.header current="confirm-password" />
+
+    <div class="p-7 sm:p-8 flex flex-col gap-5">
+      <div>
+        <div class="w-9 h-0.5 bg-stamp mb-4"></div>
+        <h1 class="font-display text-[22px]">Sicherheitsbereich</h1>
+        <p class="mt-2 text-[14px] leading-relaxed text-ink-soft">
+          Dies ist ein geschützter Bereich der Anwendung. Bitte bestätige dein Passwort, bevor du fortfährst.
+        </p>
+      </div>
+
+      <form method="POST"
+            action="{{ route('password.confirm') }}"
+            class="flex flex-col gap-4"
+      >
+        @csrf
+
+        <x-form.field name="password"
+                      label="Passwort"
+                      type="password"
+                      required
+                      autofocus
+                      autocomplete="current-password"
+                      placeholder="••••••••"
+        />
+
+        <div class="flex items-center justify-end pt-2">
+          <x-button>Bestätigen</x-button>
+        </div>
+      </form>
+    </div>
   </div>
 
-  <form method="POST"
-        action="{{ route('password.confirm') }}"
-  >
-    @csrf
-
-    <!-- Password -->
-    <div>
-      <x-input-label for="password"
-                     :value="__('Password')"
-      />
-
-      <x-text-input id="password"
-                    class="block mt-1 w-full"
-                    type="password"
-                    name="password"
-                    required
-                    autocomplete="current-password"
-      />
-
-      <x-input-error :messages="$errors->get('password')"
-                     class="mt-2"
-      />
-    </div>
-
-    <div class="flex justify-end mt-4">
-      <x-primary-button>
-        {{ __('Confirm') }}
-      </x-primary-button>
-    </div>
-  </form>
-</x-guest-layout>
+</x-layouts.auth>
