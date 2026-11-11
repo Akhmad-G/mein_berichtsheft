@@ -1,58 +1,231 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Mein Berichtsheft 📓✨
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+> **Digitales Ausbildungs- und Praktikumsberichtsheft mit Git-basierter Datenhaltung im realistischen Notizbuch-Design.**
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📖 Übersicht
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Mein Berichtsheft** ist eine moderne Webanwendung zur vollständigen digitalen Führung von Ausbildungsnachweisen (Berichtsheft) gemäß den Anforderungen der IHK / HWK. 
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Die Anwendung verbindet ein haptisch wirkendes, von traditionellen Berichtsheften und Heftern inspiriertes UI-Design („Paper & Ink“) mit einer innovativen und manipulationssicheren Speicherarchitektur: **Die eigentlichen Berichte werden nicht in einer SQL-Datenbank abgelegt, sondern strukturiert als JSON-Dateien direkt in einem GitLab-Repository versioniert**.
 
-## Learning Laravel
+### ✨ Kernmerkmale
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- 🎨 **Authentisches Notizbuch-Design:** Skewmorphe, klare Papierästhetik (`Paper & Ink`), Register-Tabs, dynamische Stempel und Status-Pins mit nahtlosem Light-/Dark-Mode (Tailwind CSS v4).
+- 📅 **Interaktiver Kalender:** Monatsübersicht mit visueller Statusanzeige jedes Tages (Erfasst, Offen, Berufsschule, Urlaub, Krank, Feiertag).
+- 📝 **Tagesberichte & Zeitraum-Erfassung:** Erfassung von Tätigkeiten, Dauer, Abteilung, Lernschritten oder Abwesenheitsgründen. Unterstützung für Sammelerfassung über Datumsbereiche.
+- 🗂️ **Wochenberichte & Arbeitsnachweise:** Automatische Aggregation von Montag bis Freitag in übersichtlichen Wochenblättern.
+- ✍️ **Digitale Unterschriften (Canvas):** Zeichnen von Unterschriften direkt im Browser (für Azubi und Ausbilder) ohne externe Bibliotheken.
+- 🔒 **GitLab als Datenspeicher (Git-backed):** Automatische Versionierung, transparente Historie und Datensouveränität. SQL wird ausschließlich für Benutzer- und Authentifizierungsdaten verwendet.
+- 🖨️ **Druck- & PDF-Export:** Perfekt auf DIN A4 optimierte Druckansichten für Einzelwochen sowie das gesamte Ausbildungsnachweis-Heft inklusive Deckblatt.
+- 👥 **Rollenbasiertes Rechtesystem:** Maßgeschneiderte Oberflächen und Workflows für **Auszubildende (Azubi)** und **Ausbilder**.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## 🏗️ Architektur & Technologie-Stack
 
-## Agentic Development
+### Backend & Framework
+- **PHP 8.3+**
+- **Laravel 12 / 13**
+- **Laravel Breeze** (Authentifizierung)
+- **Barryvdh Laravel DomPDF** (Ergänzender PDF-Support)
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Frontend & Styling
+- **Laravel Blade Components** (Strenge Komponentenstruktur)
+- **Tailwind CSS v4** (CSS-Tokens via `@theme`, Native CSS-Variablen)
+- **Vanilla JavaScript** (Theme-Toggle, HTML5 Canvas für Unterschriften, dynamische Formularfelder)
 
-```bash
-composer require laravel/boost --dev
+### Datenhaltung & Storage-Konzept
+- **Relational DB (SQLite / MySQL / MariaDB):** Speichert ausschließlich `users`-Stammdaten, Login-Informationen und den zugeordneten `gitlab_path`.
+- **GitLab REST API (`GitLabService` & `ReportRepository`):** Speichert Tages- und Wochenberichte als JSON-Dateien direkt im Ziel-Repository.
 
-php artisan boost:install
+---
+
+## 👥 Rollen & Workflow
+
+```
+[Azubi]
+  │
+  ├─► Tagesberichte ausfüllen / Tage kategorisieren (Arbeit, Schule, Urlaub, Krank, Feiertag)
+  ├─► Wochenbericht prüfen & digital unterschreiben
+  └─► Wochenbericht einreichen (Status: Draft ➔ Submitted)
+        │
+        ▼
+[Ausbilder]
+  │
+  ├─► Übersicht „Meine Azubis“ & eingereichte Wochen prüfen
+  ├─► Wochenbericht digital gegenzeichnen (Status: Submitted ➔ Signed)
+  └─► Gesamten Ausbildungsnachweis als PDF/Druck exportieren
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 1. Auszubildender (Azubi)
+- **Kalenderansicht (`/calendar`):** Direkte Übersicht aller Tage des Monats mit Farbkennzeichnung.
+- **Tageserfassung:** 
+  - *Arbeitstag:* Tätigkeiten, Zeitaufwand, Abteilung, Lernschritte.
+  - *Besondere Tage:* Berufsschule, Urlaub, Krankheit (inkl. AU-Notiz), Feiertag.
+  - *Zeitraumfunktion:* Z. B. 2 Wochen Urlaub oder Berufsschulblock mit einem Klick erfassen.
+- **Wochenabschluss:** Zusammenfassung prüfen, digital unterschreiben und zur Freigabe an den Ausbilder übermitteln.
 
-## Contributing
+### 2. Ausbilder
+- **Azubi-Verwaltung (`/azubis`):** Übersicht aller zugewiesenen Auszubildenden mit Zählern für offene, eingereichte und signierte Wochen.
+- **Prüfung & Freigabe (`/weekly-reports`):** Einsehen der Tageseinträge und digitale Freigabe per Unterschrift.
+- **Ausbildungsnachweis-Druck (`/training-record/{user}/print`):** Kompletter Ausbildungsnachweis inklusive Deckblatt für Zwischen- und Abschlussprüfungen.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 📁 Repository- & JSON-Dateistruktur (GitLab)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Jeder Auszubildende besitzt einen eigenen Ordnerpfad (`gitlab_path`, z. B. `azubis/mustermann-max`). Die Berichte werden nach ISO-Kalenderwochen strukturiert:
 
-## Security Vulnerabilities
+```text
+{gitlab_path}/
+└── 2026/
+    ├── KW-40/
+    │   ├── 2026-09-28.json              # Tagesbericht Montag
+    │   ├── 2026-09-29.json              # Tagesbericht Dienstag
+    │   ├── ...
+    │   └── KW-40 Wochenbericht.json     # Wochenbericht-Status, Metadaten & Signaturen
+    └── KW-41/
+        └── ...
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Beispiel: Tagesbericht (`2026-09-28.json`)
+```json
+{
+  "datum": "2026-09-28",
+  "typ": "work",
+  "taetigkeiten": "Entwicklung der GitLab-API-Anbindung für das Berichtsheft.",
+  "dauer": "8 h",
+  "abteilung": "Softwareentwicklung",
+  "lernziele": [
+    "REST-API-Integration",
+    "Repository Pattern in Laravel"
+  ]
+}
+```
 
-## License
+### Beispiel: Abwesenheit / Schule (`2026-09-29.json`)
+```json
+{
+  "datum": "2026-09-29",
+  "typ": "sick",
+  "notiz": "AU bis 02.10. eingereicht"
+}
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Beispiel: Wochenbericht (`KW-40 Wochenbericht.json`)
+```json
+{
+  "jahr": 2026,
+  "kalenderwoche": 40,
+  "azubi": "Max Mustermann",
+  "berichtsnummer": 38,
+  "status": "signed",
+  "eingereicht_am": "2026-10-02T16:30:00+02:00",
+  "unterschrieben_am": "2026-10-05T09:15:00+02:00",
+  "unterschrieben_von": {
+    "id": 1,
+    "name": "Alex Trainer"
+  },
+  "azubi_unterschrift": {
+    "lines": [...]
+  },
+  "ausbilder_unterschrift": {
+    "lines": [...]
+  }
+}
+```
+
+---
+
+## 🧩 Wichtige Blade-Komponenten
+
+Die Benutzeroberfläche basiert auf wiederverwendbaren Blade-Komponenten:
+
+| Komponente | Tag | Beschreibung |
+|---|---|---|
+| **Notebook Shell** | `<x-notebook :tabs="...">` | Simuliert das aufgeschlagene Heft mit Slots für linke/rechte Seite |
+| **Page Header** | `<x-notebook.page-header>` | Einheitliche Kopfzeile mit exakter Faltlinien-Ausrichtung |
+| **Register Tabs** | `<x-notebook.tabs>` | Haptische Reiter zur Navigation zwischen Bereichen |
+| **Stempel** | `<x-stamp status="..." />` | Visueller Statusstempel (`recorded`, `open`, `school`, `vacation`, `sick`, `holiday`, `pending`, `signed`) |
+| **Tagestyp-Auswahl** | `<x-calendar.day-type>` | Umschalter zwischen Arbeitszeiten und Fehl-/Schulzeiten |
+| **Wochenblatt** | `<x-weekly-report.sheet>` | DIN A4-konforme Darstellung der gesamten Kalenderwoche |
+| **Signatur** | `<x-weekly-report.signature>` | Canvas-basierte Anzeige und Erfassung digitaler Unterschriften |
+| **Ausbildungsnachweis**| `<x-training-record.cover>` | IHK-konformes Deckblatt des gesamten Berichtshefts |
+
+---
+
+## ⚙️ Installation & Einrichtung
+
+### Voraussetzungen
+- PHP >= 8.3 (mit Extensions: `curl`, `json`, `mbstring`, `pdo_sqlite` bzw. `pdo_mysql`)
+- Composer
+- Node.js & npm
+- GitLab-Account & Access Token (mit `api` bzw. `read_repository` / `write_repository` Rechten)
+- DDEV / Docker (optional, aber empfohlen)
+
+### 1. Repository klonen & Abhängigkeiten installieren
+```bash
+git clone <repository-url> mein-berichtsheft
+cd mein-berichtsheft
+
+composer install
+npm install
+```
+
+### 2. Umgebungskonfiguration (`.env`)
+Kopiere die Vorlage und generiere den App-Key:
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+Konfiguriere die GitLab-Anbindung in deiner `.env`:
+```dotenv
+DB_CONNECTION=sqlite
+
+# GitLab API Konfiguration
+GITLAB_URL=https://gitlab.example.com
+GITLAB_TOKEN=dein-personal-access-token
+GITLAB_PROJECT_ID=12345
+GITLAB_BRANCH=main
+```
+
+### 3. Datenbank migrieren und Testdaten anlegen
+```bash
+php artisan migrate --seed
+```
+
+Der Seeder (`DatabaseSeeder`) richtet standardmäßig Test-Accounts ein (konfigurierbar über `.env`):
+- **Ausbilder:** `ausbilder@example.com` (Passwort: `password`)
+- **Azubi 1:** `azubi@example.com` (Passwort: `password`)
+- **Azubi 2:** `erika.musterfrau@example.com` (Passwort: `password`)
+
+### 4. Assets kompilieren & Server starten
+```bash
+# Im Entwicklungsmodus:
+npm run dev
+
+# In einem separaten Terminal:
+php artisan serve
+```
+
+---
+
+## 🛠️ Nützliche Artisan-Befehle
+
+- **Tests ausführen:**
+  ```bash
+  php artisan test
+  ```
+- **Code-Formatting (Pint):**
+  ```bash
+  ./vendor/bin/pint
+  ```
+
+---
+
+## 📄 Lizenz
+
+Dieses Projekt steht unter der [MIT-Lizenz](LICENSE).
